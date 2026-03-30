@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>АКРА — Киберспорт Абхазии</title>
+<link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<style>
+/* ══════════════════════════════════════════
+   DESIGN TOKENS
+══════════════════════════════════════════ */
+:root{
+  --bg:#08060f;
+  --purple:#7B52E8;
+
+  /* CS2 — orange like CS2 logo */
+  --cs:#FF6B1A;  --cs2:#FF8C00;  --cs-bg1:#1a0800;  --cs-bg2:#0f0500;
+
+  /* DOTA 2 — dark red like Dota logo */
+  --dt:#C0392B;  --dt2:#E74C3C;  --dt-bg1:#1a0000;  --dt-bg2:#0f0000;
+
+  /* FIFA — blue like EA FIFA */
+  --fa:#0099FF;  --fa2:#00C8FF;  --fa-bg1:#00081a;  --fa-bg2:#00040f;
+
+  /* PUBG — dirty yellow/tan like PUBG logo */
+  --pb:#F5C518;  --pb2:#C8860A;  --pb-bg1:#1a1200;  --pb-bg2:#0f0b00;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{background:var(--bg);color:#fff;font-family:'Exo 2',sans-serif;overflow-x:hidden;}
+::-webkit-scrollbar{width:5px;}
+::-webkit-scrollbar-track{background:#06040c;}
+::-webkit-scrollbar-thumb{background:#7B52E8;border-radius:3px;}
+
+/* ══════════════════════════════════════════
+   LOADER
+══════════════════════════════════════════ */
+#loader{position:fixed;inset:0;background:#000;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:16px;transition:opacity .6s ease;}
+#loader.hide{opacity:0;pointer-events:none;}
+#loader img{height:90px;width:auto;animation:ldrPulse 1s ease-in-out infinite alternate;}
+@keyframes ldrPulse{from{filter:drop-shadow(0 0 8px #7B52E8);opacity:.7;}to{filter:drop-shadow(0 0 28px #ADFF2F) drop-shadow(0 0 50px #7B52E8);opacity:1;}}
+.ldr-bar{width:200px;height:2px;background:#1a0a2e;border-radius:2px;overflow:hidden;}
+.ldr-fill{height:100%;background:linear-gradient(90deg,#7B52E8,#FF6B1A,#C0392B,#0099FF,#F5C518);animation:ldrFill 1.8s ease forwards;}
+@keyframes ldrFill{from{width:0}to{width:100%}}
+.ldr-txt{font-size:10px;font-weight:700;letter-spacing:5px;text-transform:uppercase;color:rgba(255,255,255,.35);}
+
+/* ══════════════════════════════════════════
+   NAV — logo centered, 2 links each side
+══════════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:68px;
+  background:rgba(8,6,15,.92);
+  backdrop-filter:blur(20px);
+  border-bottom:1px solid rgba(255,255,255,.06);
+  display:grid;
+  grid-template-columns:1fr auto 1fr;
+  align-items:center;
+  padding:0 32px;
+}
+.nav-left{display:flex;gap:4px;justify-content:flex-end;align-items:center;}
+.nav-right{display:flex;gap:4px;justify-content:flex-start;align-items:center;}
+.nav-center{display:flex;justify-content:center;align-items:center;padding:0 24px;}
+.nav-center img{height:48px;width:auto;filter:drop-shadow(0 0 6px rgba(123,82,232,.5));transition:filter .3s;}
+.nav-center img:hover{filter:drop-shadow(0 0 14px rgba(173,255,47,.7));}
+.nav-link{
+  font-size:11px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:rgba(255,255,255,.45);text-decoration:none;
+  padding:7px 16px;border:1px solid transparent;border-radius:4px;
+  transition:all .22s ease;white-space:nowrap;
+}
+.nav-link[data-g="cs"]:hover,.nav-link[data-g="cs"].on{color:var(--cs);border-color:rgba(255,107,26,.35);background:rgba(255,107,26,.08);text-shadow:0 0 12px var(--cs);}
+.nav-link[data-g="dt"]:hover,.nav-link[data-g="dt"].on{color:var(--dt2);border-color:rgba(192,57,43,.35);background:rgba(192,57,43,.08);text-shadow:0 0 12px var(--dt2);}
+.nav-link[data-g="fa"]:hover,.nav-link[data-g="fa"].on{color:var(--fa);border-color:rgba(0,153,255,.35);background:rgba(0,153,255,.08);text-shadow:0 0 12px var(--fa);}
+.nav-link[data-g="pb"]:hover,.nav-link[data-g="pb"].on{color:var(--pb);border-color:rgba(245,197,24,.35);background:rgba(245,197,24,.08);text-shadow:0 0 12px var(--pb);}
+.btn-adm{
+  font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;
+  color:var(--purple);background:transparent;border:1px solid rgba(123,82,232,.4);
+  padding:7px 14px;border-radius:4px;cursor:pointer;transition:all .22s;margin-left:8px;
+}
+.btn-adm:hover,.btn-adm.on{background:var(--purple);color:#fff;box-shadow:0 0 18px rgba(123,82,232,.5);}
+
+/* ══════════════════════════════════════════
+   HERO
+══════════════════════════════════════════ */
+#hero{position:relative;height:100vh;display:flex;align-items:center;justify-content:center;overflow:hidden;padding-top:68px;}
+#pcv{position:absolute;inset:0;z-index:0;}
+.scanlines{position:absolute;inset:0;z-index:1;pointer-events:none;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,0,0,.1) 2px,rgba(0,0,0,.1) 4px);}
+.hgrid{position:absolute;inset:0;z-index:1;background-image:linear-gradient(rgba(123,82,232,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(123,82,232,.04) 1px,transparent 1px);background-size:55px 55px;}
+.hcontent{position:relative;z-index:5;text-align:center;max-width:860px;padding:0 20px;}
+.hero-logo{display:block;height:120px;width:auto;margin:0 auto 28px;filter:drop-shadow(0 0 18px rgba(173,255,47,.45)) drop-shadow(0 0 45px rgba(123,82,232,.7));animation:hPulse 3.5s ease-in-out infinite;}
+@keyframes hPulse{0%,100%{filter:drop-shadow(0 0 14px rgba(173,255,47,.35)) drop-shadow(0 0 35px rgba(123,82,232,.6));}50%{filter:drop-shadow(0 0 28px rgba(173,255,47,.8)) drop-shadow(0 0 60px rgba(123,82,232,1));}}
+.hero-eye{font-size:10px;font-weight:700;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,.35);margin-bottom:12px;}
+.hero-h1{font-size:clamp(32px,5.5vw,74px);font-weight:900;letter-spacing:2px;text-transform:uppercase;line-height:1;margin-bottom:14px;background:linear-gradient(135deg,#fff 0%,#ADFF2F 45%,#FF6B1A 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:250% auto;animation:shimmer 5s linear infinite;}
+@keyframes shimmer{to{background-position:250% center}}
+.glitch{position:relative;}
+.glitch::before,.glitch::after{content:attr(data-t);position:absolute;top:0;left:0;right:0;background:linear-gradient(135deg,#fff 0%,#ADFF2F 45%,#FF6B1A 75%,#fff 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-size:250% auto;}
+.glitch::before{animation:g1 4s infinite;clip-path:polygon(0 0,100% 0,100% 33%,0 33%);}
+.glitch::after{animation:g2 4s infinite;clip-path:polygon(0 66%,100% 66%,100% 100%,0 100%);}
+@keyframes g1{0%,88%,100%{transform:translate(0)}90%{transform:translate(-3px,-1px)}93%{transform:translate(3px,1px)}}
+@keyframes g2{0%,88%,100%{transform:translate(0)}90%{transform:translate(3px,1px)}93%{transform:translate(-3px,-1px)}}
+.hero-sub{font-size:clamp(11px,1.4vw,15px);font-weight:600;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:40px;}
+.hbtns{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;}
+.btn-p{font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#000;background:#39FF14;border:none;padding:14px 34px;border-radius:4px;cursor:pointer;transition:all .28s;position:relative;overflow:hidden;}
+.btn-p::before{content:'';position:absolute;inset:0;background:linear-gradient(45deg,transparent 35%,rgba(255,255,255,.3) 50%,transparent 65%);transform:translateX(-100%);transition:.45s;}
+.btn-p:hover::before{transform:translateX(100%);}
+.btn-p:hover{box-shadow:0 0 28px rgba(57,255,20,.6);transform:translateY(-2px);}
+.btn-o{font-size:12px;font-weight:800;letter-spacing:3px;text-transform:uppercase;color:#fff;background:transparent;border:1px solid rgba(255,255,255,.25);padding:14px 34px;border-radius:4px;cursor:pointer;transition:all .28s;}
+.btn-o:hover{border-color:rgba(255,255,255,.55);transform:translateY(-2px);}
+.scroll-ind{position:absolute;bottom:24px;left:50%;transform:translateX(-50%);z-index:5;display:flex;flex-direction:column;align-items:center;gap:5px;animation:bob 2.5s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateX(-50%) translateY(0);}50%{transform:translateX(-50%) translateY(8px);}}
+.scroll-ind span{font-size:8px;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.2);}
+.scroll-chev{width:16px;height:16px;border-right:2px solid rgba(255,255,255,.2);border-bottom:2px solid rgba(255,255,255,.2);transform:rotate(45deg);}
+
+/* ══════════════════════════════════════════
+   STATS STRIP
+══════════════════════════════════════════ */
+.stats-strip{background:rgba(0,0,0,.5);border-top:1px solid rgba(255,255,255,.05);border-bottom:1px solid rgba(255,255,255,.05);}
+.stats-row{display:flex;justify-content:center;gap:64px;padding:28px 40px;flex-wrap:wrap;max-width:1100px;margin:0 auto;}
+.stat-n{font-size:clamp(28px,4vw,48px);font-weight:900;line-height:1;}
+.stat-l{font-size:10px;font-weight:600;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-top:4px;}
+
+/* ══════════════════════════════════════════
+   SECTION TRANSITIONS (smooth diagonal wipes)
+══════════════════════════════════════════ */
+.game-section{position:relative;padding:80px 0 70px;overflow:hidden;}
+.game-section::before{content:'';position:absolute;top:-40px;left:0;right:0;height:80px;z-index:3;pointer-events:none;}
+.game-section::after{content:'';position:absolute;bottom:-40px;left:0;right:0;height:80px;z-index:3;pointer-events:none;}
+
+/* CS2 section gradient — CS2 orange/steel */
+#cs2{background:linear-gradient(180deg,#08060f 0%,#100700 30%,#1a0a00 50%,#100700 70%,#08060f 100%);}
+#cs2::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
+#cs2::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
+#cs2 .sec-bg-grad{position:absolute;inset:0;background:radial-gradient(ellipse at 10% 50%,rgba(255,107,26,.12) 0%,transparent 50%),radial-gradient(ellipse at 90% 30%,rgba(255,140,0,.08) 0%,transparent 45%),radial-gradient(ellipse at 50% 80%,rgba(180,60,0,.06) 0%,transparent 40%);}
+
+/* DOTA 2 — blood red */
+#dota{background:linear-gradient(180deg,#08060f 0%,#120000 30%,#1a0000 50%,#120000 70%,#08060f 100%);}
+#dota::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
+#dota::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
+#dota .sec-bg-grad{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 40%,rgba(192,57,43,.14) 0%,transparent 50%),radial-gradient(ellipse at 80% 60%,rgba(140,0,0,.1) 0%,transparent 45%);}
+
+/* FIFA — EA blue */
+#fifa{background:linear-gradient(180deg,#08060f 0%,#00040f 30%,#000818 50%,#00040f 70%,#08060f 100%);}
+#fifa::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
+#fifa::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
+#fifa .sec-bg-grad{position:absolute;inset:0;background:radial-gradient(ellipse at 15% 50%,rgba(0,153,255,.12) 0%,transparent 50%),radial-gradient(ellipse at 85% 40%,rgba(0,200,255,.08) 0%,transparent 45%);}
+
+/* PUBG — dirty yellow/tan + mud gradient */
+#pubg{background:linear-gradient(180deg,#08060f 0%,#150e00 25%,#1a1200 45%,#0f0a00 65%,#08060f 100%);}
+#pubg::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
+#pubg::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
+#pubg .sec-bg-grad{position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 50% 0%,rgba(245,197,24,.15) 0%,transparent 40%),
+    radial-gradient(ellipse at 20% 50%,rgba(200,134,10,.1) 0%,transparent 45%),
+    radial-gradient(ellipse at 80% 80%,rgba(100,70,5,.12) 0%,transparent 40%),
+    linear-gradient(180deg,rgba(245,197,24,.04) 0%,rgba(80,50,0,.08) 60%,rgba(40,25,0,.1) 100%);
+}
+
+.snake-canvas{position:absolute;inset:0;z-index:0;pointer-events:none;}
+.sec-inner{position:relative;z-index:2;max-width:1400px;margin:0 auto;padding:0 40px;}
+
+/* ══════════════════════════════════════════
+   SECTION HEADERS
+══════════════════════════════════════════ */
+.sec-head{text-align:center;margin-bottom:56px;}
+.sec-tag{display:inline-block;font-size:10px;font-weight:800;letter-spacing:5px;text-transform:uppercase;padding:5px 18px;border-radius:2px;margin-bottom:14px;}
+.sec-title{font-size:clamp(28px,4vw,60px);font-weight:900;letter-spacing:3px;text-transform:uppercase;line-height:1.05;margin-bottom:10px;}
+.sec-line{width:70px;height:3px;margin:14px auto 0;border-radius:2px;}
+
+#cs2 .sec-tag{color:var(--cs);border:1px solid rgba(255,107,26,.3);background:rgba(255,107,26,.07);}
+#cs2 .sec-title{color:var(--cs);text-shadow:0 0 40px rgba(255,107,26,.25);}
+#cs2 .sec-line{background:linear-gradient(90deg,transparent,var(--cs),transparent);}
+
+#dota .sec-tag{color:var(--dt2);border:1px solid rgba(231,76,60,.3);background:rgba(231,76,60,.07);}
+#dota .sec-title{color:var(--dt2);text-shadow:0 0 40px rgba(192,57,43,.25);}
+#dota .sec-line{background:linear-gradient(90deg,transparent,var(--dt2),transparent);}
+
+#fifa .sec-tag{color:var(--fa);border:1px solid rgba(0,153,255,.3);background:rgba(0,153,255,.07);}
+#fifa .sec-title{color:var(--fa);text-shadow:0 0 40px rgba(0,153,255,.25);}
+#fifa .sec-line{background:linear-gradient(90deg,transparent,var(--fa),transparent);}
+
+#pubg .sec-tag{color:var(--pb);border:1px solid rgba(245,197,24,.3);background:rgba(245,197,24,.07);}
+#pubg .sec-title{color:var(--pb);text-shadow:0 0 40px rgba(245,197,24,.25);}
+#pubg .sec-line{background:linear-gradient(90deg,transparent,var(--pb),transparent);}
+
+/* ══════════════════════════════════════════
+   TWO-COL LAYOUT
+══════════════════════════════════════════ */
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:start;}
+@media(max-width:900px){.two-col{grid-template-columns:1fr;}}
+
+/* ══════════════════════════════════════════
+   GLASS PANELS
+══════════════════════════════════════════ */
+.gpanel{background:rgba(255,255,255,.025);border:1px solid rgba(255,255,255,.07);border-radius:10px;padding:26px;backdrop-filter:blur(10px);}
+.ptitle{font-size:12px;font-weight:800;letter-spacing:4px;text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:8px;}
+.ptitle::before{content:'';display:block;width:3px;height:18px;border-radius:2px;flex-shrink:0;}
+.cs-p .ptitle::before{background:var(--cs);}
+.dt-p .ptitle::before{background:var(--dt2);}
+.fa-p .ptitle::before{background:var(--fa);}
+.pb-p .ptitle::before{background:var(--pb);}
+
+/* ══════════════════════════════════════════
+   FORMS
+══════════════════════════════════════════ */
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+@media(max-width:600px){.fgrid{grid-template-columns:1fr;}}
+.fg{display:flex;flex-direction:column;gap:5px;}
+.fg.full{grid-column:1/-1;}
+.flbl{font-size:9px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.3);}
+.finp,.fsel{background:rgba(0,0,0,.4);border:1px solid rgba(255,255,255,.08);color:#fff;padding:10px 14px;border-radius:5px;font-family:'Exo 2',sans-serif;font-size:14px;font-weight:500;outline:none;transition:all .22s;width:100%;}
+.finp::placeholder{color:rgba(255,255,255,.2);}
+.fsel option{background:#1a0a2e;}
+.cs-i:focus{border-color:var(--cs);box-shadow:0 0 12px rgba(255,107,26,.2);}
+.dt-i:focus{border-color:var(--dt2);box-shadow:0 0 12px rgba(231,76,60,.2);}
+.fa-i:focus{border-color:var(--fa);box-shadow:0 0 12px rgba(0,153,255,.2);}
+.pb-i:focus{border-color:var(--pb);box-shadow:0 0 12px rgba(245,197,24,.2);}
+.fbtn{font-family:'Exo 2',sans-serif;font-size:11px;font-weight:800;letter-spacing:3px;text-transform:uppercase;border:none;padding:13px;border-radius:5px;cursor:pointer;transition:all .28s;position:relative;overflow:hidden;width:100%;margin-top:6px;}
+.fbtn::after{content:'';position:absolute;inset:0;background:linear-gradient(45deg,transparent 30%,rgba(255,255,255,.22) 50%,transparent 70%);transform:translateX(-100%);transition:.5s;}
+.fbtn:hover::after{transform:translateX(100%);}
+.cs-btn{background:var(--cs);color:#000;}
+.cs-btn:hover{box-shadow:0 0 22px rgba(255,107,26,.6);}
+.dt-btn{background:var(--dt2);color:#fff;}
+.dt-btn:hover{box-shadow:0 0 22px rgba(231,76,60,.6);}
+.fa-btn{background:var(--fa);color:#000;}
+.fa-btn:hover{box-shadow:0 0 22px rgba(0,153,255,.6);}
+.pb-btn{background:var(--pb);color:#000;}
+.pb-btn:hover{box-shadow:0 0 22px rgba(245,197,24,.6);}
+
+/* ══════════════════════════════════════════
+   ADMIN PANEL
+══════════════════════════════════════════ */
+.adm-panel{display:none;margin-top:16px;border-top:1px solid rgba(255,255,255,.05);padding-top:16px;}
+.adm-panel.show{display:block;animation:fadein .35s ease;}
+@keyframes fadein{from{opacity:0;transform:translateY(-8px);}to{opacity:1;transform:translateY(0);}}
+.adm-badge{display:inline-flex;align-items:center;gap:5px;background:rgba(123,82,232,.15);border:1px solid rgba(123,82,232,.35);color:#a07cf0;font-size:9px;font-weight:800;letter-spacing:2px;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:12px;}
+
+/* ══════════════════════════════════════════
+   TOURNAMENTS
+══════════════════════════════════════════ */
+.t-list{display:flex;flex-direction:column;gap:8px;margin-top:12px;}
+.t-item{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.06);border-radius:7px;padding:12px 16px;display:flex;align-items:center;justify-content:space-between;transition:border-color .2s;}
+.t-name{font-size:13px;font-weight:700;letter-spacing:.5px;}
+.t-meta{font-size:11px;color:rgba(255,255,255,.3);margin-top:2px;}
+.t-badge{font-size:9px;font-weight:800;letter-spacing:2px;padding:3px 10px;border-radius:20px;border:1px solid;text-transform:uppercase;white-space:nowrap;}
+.tcs{color:var(--cs);border-color:rgba(255,107,26,.4);background:rgba(255,107,26,.1);}
+.tdt{color:var(--dt2);border-color:rgba(231,76,60,.4);background:rgba(231,76,60,.1);}
+.tfa{color:var(--fa);border-color:rgba(0,153,255,.4);background:rgba(0,153,255,.1);}
+.tpb{color:var(--pb);border-color:rgba(245,197,24,.4);background:rgba(245,197,24,.1);}
+.t-empty{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.18);padding:12px 0;}
+
+/* ══════════════════════════════════════════
+   PLAYER CARDS
+══════════════════════════════════════════ */
+.cards-sec{margin-top:48px;}
+.cards-ttl{font-size:11px;font-weight:800;letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.3);margin-bottom:22px;text-align:center;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(168px,1fr));gap:18px;}
+.no-cards{grid-column:1/-1;text-align:center;padding:36px;font-size:10px;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.15);}
+.pcard{position:relative;width:168px;height:235px;cursor:pointer;perspective:800px;margin:0 auto;}
+.pcard-iw{width:100%;height:100%;transform-style:preserve-3d;transition:transform .6s cubic-bezier(.4,0,.2,1);}
+.pcard:hover .pcard-iw{transform:rotateY(180deg);}
+.pcard-f,.pcard-b{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;}
+.pcard-b{transform:rotateY(180deg);}
+
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+#toast{position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;gap:8px;pointer-events:none;}
+.tmsg{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;padding:11px 20px;border-radius:5px;backdrop-filter:blur(16px);animation:tIn .32s ease forwards;}
+.tmsg.ok{background:rgba(57,255,20,.12);border:1px solid rgba(57,255,20,.4);color:#39FF14;}
+.tmsg.err{background:rgba(255,60,60,.12);border:1px solid rgba(255,60,60,.4);color:#ff5050;}
+@keyframes tIn{from{opacity:0;transform:translateX(24px);}to{opacity:1;transform:translateX(0);}}
+
+/* ══════════════════════════════════════════
+   ADMIN MODAL
+══════════════════════════════════════════ */
+#amodal{position:fixed;inset:0;z-index:500;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(10px);}
+#amodal.open{display:flex;}
+.mbox{background:linear-gradient(135deg,#1a0a2e,#0a0414);border:1px solid rgba(123,82,232,.4);border-radius:10px;padding:36px;width:100%;max-width:340px;text-align:center;position:relative;}
+.mttl{font-size:16px;font-weight:900;letter-spacing:4px;text-transform:uppercase;margin-bottom:4px;}
+.msub{font-size:12px;color:rgba(255,255,255,.3);letter-spacing:1px;margin-bottom:22px;}
+.minp{width:100%;background:rgba(0,0,0,.5);border:1px solid rgba(123,82,232,.3);color:#fff;padding:12px 18px;border-radius:5px;font-family:'Exo 2',sans-serif;font-size:15px;font-weight:700;letter-spacing:5px;outline:none;text-align:center;margin-bottom:12px;transition:.22s;}
+.minp:focus{border-color:var(--purple);box-shadow:0 0 18px rgba(123,82,232,.3);}
+.mcls{position:absolute;top:12px;right:14px;background:none;border:none;color:rgba(255,255,255,.25);font-size:20px;cursor:pointer;transition:.2s;}
+.mcls:hover{color:#fff;}
+
+/* ══════════════════════════════════════════
+   REVEAL ANIMATIONS
+══════════════════════════════════════════ */
+.rev{opacity:0;transform:translateY(30px);transition:opacity .6s ease,transform .6s ease;}
+.revL{opacity:0;transform:translateX(-30px);transition:opacity .6s ease,transform .6s ease;}
+.revR{opacity:0;transform:translateX(30px);transition:opacity .6s ease,transform .6s ease;}
+.rev.vis,.revL.vis,.revR.vis{opacity:1;transform:translate(0);}
+
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 40px 36px;text-align:center;}
+.ftr-logo{margin-bottom:14px;}
+.ftr-logo img{height:60px;width:auto;opacity:.7;}
+.ftr-name{font-size:20px;font-weight:900;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,.7);margin-bottom:6px;}
+.ftr-txt{font-size:10px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.18);line-height:2;}
+.ftr-div{width:44px;height:1px;background:rgba(255,255,255,.08);margin:16px auto;}
+.ftr-links{display:flex;justify-content:center;gap:28px;flex-wrap:wrap;}
+.ftr-links a{font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.22);text-decoration:none;transition:color .2s;}
+.ftr-links a:hover{color:#fff;}
+</style>
+</head>
+<body>
+
+<!-- LOADER -->
+<div id="loader">
+  <img src="akra_logo_single_site.svg" alt="АКРА"/>
+  <div class="ldr-bar"><div class="ldr-fill"></div></div>
+  <div class="ldr-txt">Инициализация системы...</div>
+</div>
+
+<!-- ADMIN MODAL -->
+<div id="amodal">
+  <div class="mbox">
+    <button class="mcls" onclick="closeAdm()">✕</button>
+    <div class="mttl">Admin</div>
+    <div class="msub">Введите пароль</div>
+    <input type="password" class="minp" id="apass" placeholder="••••••••" maxlength="20"/>
+    <button class="fbtn pb-btn" style="margin-top:0;" onclick="checkAdm()">Войти</button>
+  </div>
+</div>
+
+<!-- NAV: [CS2][DOTA2]  [LOGO]  [FIFA][PUBG] -->
+<nav>
+  <div class="nav-left">
+    <a class="nav-link" href="#cs2" data-g="cs">CS2</a>
+    <a class="nav-link" href="#dota" data-g="dt">Dota 2</a>
+  </div>
+  <div class="nav-center">
+    <a href="#hero"><img src="akra_logo_single_site.svg" alt="АКРА"/></a>
+  </div>
+  <div class="nav-right">
+    <a class="nav-link" href="#fifa" data-g="fa">FIFA</a>
+    <a class="nav-link" href="#pubg" data-g="pb">PUBG</a>
+    <button class="btn-adm" id="admBtn" onclick="openAdm()">Admin</button>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section id="hero">
+  <canvas id="pcv"></canvas>
+  <div class="scanlines"></div>
+  <div class="hgrid"></div>
+  <div class="hcontent">
+    <img src="akra_logo_single_site.svg" class="hero-logo" alt="АКРА"/>
+    <div class="hero-eye">Ассоциация Киберспорта Республики Абхазия</div>
+    <h1 class="hero-h1 glitch" data-t="Киберспорт Абхазии">Киберспорт Абхазии</h1>
+    <div class="hero-sub">Официальная платформа турниров</div>
+    <div class="hbtns">
+      <button class="btn-p" onclick="scroll2('cs2')">Зарегистрироваться</button>
+      <button class="btn-o" onclick="scroll2('cs2')">Турниры</button>
+    </div>
+  </div>
+  <div class="scroll-ind"><span>Scroll</span><div class="scroll-chev"></div></div>
+</section>
+
+<!-- STATS -->
+<div class="stats-strip">
+  <div class="stats-row">
+    <div class="rev"><div class="stat-n" style="color:var(--fa)" data-c="4">0</div><div class="stat-l">Дисциплины</div></div>
+    <div class="rev"><div class="stat-n" style="color:var(--purple)" data-c="650">0</div><div class="stat-l">Игроков</div></div>
+    <div class="rev"><div class="stat-n" style="color:var(--cs)" data-c="60">0</div><div class="stat-l">Турниров</div></div>
+    <div class="rev"><div class="stat-n" style="color:var(--pb)" data-c="2026">0</div><div class="stat-l">Год основания</div></div>
+  </div>
+</div>
+
+<!-- ══════════ CS2 ══════════ -->
+<section id="cs2" class="game-section">
+  <div class="sec-bg-grad"></div>
+  <canvas class="snake-canvas" data-rgb="255,107,26"></canvas>
+  <div class="sec-inner">
+    <div class="sec-head rev">
+      <div class="sec-tag">Дисциплина 01</div>
+      <h2 class="sec-title">Counter-Strike 2</h2>
+      <div class="sec-line"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="gpanel cs-p revL" style="border-color:rgba(255,107,26,.12);">
+          <div class="ptitle" style="color:var(--cs);">Регистрация игрока</div>
+          <form class="fgrid" id="frm-cs" onsubmit="reg(event,'cs')">
+            <div class="fg"><label class="flbl">Никнейм</label><input class="finp cs-i" name="nick" placeholder="ProPlayer" required/></div>
+            <div class="fg"><label class="flbl">Имя Фамилия</label><input class="finp cs-i" name="name" placeholder="Имя Фамилия" required/></div>
+            <div class="fg"><label class="flbl">Steam ID</label><input class="finp cs-i" name="uid" placeholder="STEAM_0:1:..."/></div>
+            <div class="fg"><label class="flbl">Рейтинг (1-10)</label><input class="finp cs-i" name="rating" type="number" min="1" max="10" placeholder="8" required/></div>
+            <div class="fg"><label class="flbl">Роль</label><select class="fsel cs-i" name="role"><option>Rifler</option><option>AWPer</option><option>IGL</option><option>Support</option><option>Entry</option></select></div>
+            <div class="fg"><label class="flbl">ATK</label><input class="finp cs-i" name="s1" type="number" min="1" max="99" placeholder="80" required/></div>
+            <div class="fg"><label class="flbl">DEF</label><input class="finp cs-i" name="s2" type="number" min="1" max="99" placeholder="72"/></div>
+            <div class="fg"><label class="flbl">AIM</label><input class="finp cs-i" name="s3" type="number" min="1" max="99" placeholder="85"/></div>
+            <div class="fg full"><label class="flbl">TAC</label><input class="finp cs-i" name="s4" type="number" min="1" max="99" placeholder="70"/></div>
+            <div class="fg full"><button class="fbtn cs-btn" type="submit">Зарегистрировать</button></div>
+          </form>
+        </div>
+        <div id="adm-cs" class="gpanel cs-p adm-panel" style="margin-top:14px;border-color:rgba(123,82,232,.12);">
+          <div class="adm-badge">Admin</div>
+          <div class="ptitle" style="color:var(--purple);">Создать турнир</div>
+          <form class="fgrid" id="frm-cs-t" onsubmit="tour(event,'cs')">
+            <div class="fg full"><label class="flbl">Название</label><input class="finp cs-i" name="tn" placeholder="АКРА CS2 Open #1" required/></div>
+            <div class="fg"><label class="flbl">Дата</label><input class="finp cs-i" name="td" type="date" required/></div>
+            <div class="fg"><label class="flbl">Формат</label><select class="fsel cs-i" name="tf"><option>5v5</option><option>1v1</option><option>2v2</option></select></div>
+            <div class="fg"><label class="flbl">Призовой фонд</label><input class="finp cs-i" name="tp" placeholder="50 000 ₽"/></div>
+            <div class="fg full"><button class="fbtn" style="background:var(--purple);color:#fff;" type="submit">Создать турнир</button></div>
+          </form>
+        </div>
+      </div>
+      <div>
+        <div class="gpanel revR" style="border-color:rgba(255,107,26,.08);margin-bottom:16px;">
+          <div class="ptitle" style="color:var(--cs);">Активные турниры</div>
+          <div id="tours-cs" class="t-list"></div>
+        </div>
+        <div class="cards-sec revR">
+          <div class="cards-ttl">Карточки игроков — CS2</div>
+          <div class="cards-grid" id="cards-cs"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ DOTA 2 ══════════ -->
+<section id="dota" class="game-section">
+  <div class="sec-bg-grad"></div>
+  <canvas class="snake-canvas" data-rgb="192,57,43"></canvas>
+  <div class="sec-inner">
+    <div class="sec-head rev">
+      <div class="sec-tag">Дисциплина 02</div>
+      <h2 class="sec-title">Dota 2</h2>
+      <div class="sec-line"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="gpanel dt-p revL" style="border-color:rgba(192,57,43,.12);">
+          <div class="ptitle" style="color:var(--dt2);">Регистрация игрока</div>
+          <form class="fgrid" id="frm-dt" onsubmit="reg(event,'dt')">
+            <div class="fg"><label class="flbl">Никнейм</label><input class="finp dt-i" name="nick" placeholder="Midlaner" required/></div>
+            <div class="fg"><label class="flbl">Имя Фамилия</label><input class="finp dt-i" name="name" placeholder="Имя Фамилия" required/></div>
+            <div class="fg"><label class="flbl">Steam ID</label><input class="finp dt-i" name="uid" placeholder="7XXXXXXXX"/></div>
+            <div class="fg"><label class="flbl">MMR</label><input class="finp dt-i" name="rating" type="number" min="0" max="12000" placeholder="4500" required/></div>
+            <div class="fg"><label class="flbl">Роль</label><select class="fsel dt-i" name="role"><option>Carry</option><option>Mid</option><option>Offlane</option><option>Support</option><option>Hard Supp</option></select></div>
+            <div class="fg"><label class="flbl">Любимый герой</label><input class="finp dt-i" name="hero" placeholder="Invoker"/></div>
+            <div class="fg"><label class="flbl">DMG</label><input class="finp dt-i" name="s1" type="number" min="1" max="99" placeholder="82" required/></div>
+            <div class="fg"><label class="flbl">SUPP</label><input class="finp dt-i" name="s2" type="number" min="1" max="99" placeholder="60"/></div>
+            <div class="fg"><label class="flbl">FARM</label><input class="finp dt-i" name="s3" type="number" min="1" max="99" placeholder="78"/></div>
+            <div class="fg full"><label class="flbl">FIGHT</label><input class="finp dt-i" name="s4" type="number" min="1" max="99" placeholder="80"/></div>
+            <div class="fg full"><button class="fbtn dt-btn" type="submit">Зарегистрировать</button></div>
+          </form>
+        </div>
+        <div id="adm-dt" class="gpanel dt-p adm-panel" style="margin-top:14px;border-color:rgba(123,82,232,.12);">
+          <div class="adm-badge">Admin</div>
+          <div class="ptitle" style="color:var(--purple);">Создать турнир</div>
+          <form class="fgrid" id="frm-dt-t" onsubmit="tour(event,'dt')">
+            <div class="fg full"><label class="flbl">Название</label><input class="finp dt-i" name="tn" placeholder="АКРА Dota2 Cup #1" required/></div>
+            <div class="fg"><label class="flbl">Дата</label><input class="finp dt-i" name="td" type="date" required/></div>
+            <div class="fg"><label class="flbl">Формат</label><select class="fsel dt-i" name="tf"><option>5v5</option><option>1v1 Mid</option></select></div>
+            <div class="fg"><label class="flbl">Призовой фонд</label><input class="finp dt-i" name="tp" placeholder="100 000 ₽"/></div>
+            <div class="fg full"><button class="fbtn" style="background:var(--purple);color:#fff;" type="submit">Создать турнир</button></div>
+          </form>
+        </div>
+      </div>
+      <div>
+        <div class="gpanel revR" style="border-color:rgba(192,57,43,.08);margin-bottom:16px;">
+          <div class="ptitle" style="color:var(--dt2);">Активные турниры</div>
+          <div id="tours-dt" class="t-list"></div>
+        </div>
+        <div class="cards-sec revR">
+          <div class="cards-ttl">Карточки игроков — Dota 2</div>
+          <div class="cards-grid" id="cards-dt"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ FIFA ══════════ -->
+<section id="fifa" class="game-section">
+  <div class="sec-bg-grad"></div>
+  <canvas class="snake-canvas" data-rgb="0,153,255"></canvas>
+  <div class="sec-inner">
+    <div class="sec-head rev">
+      <div class="sec-tag">Дисциплина 03</div>
+      <h2 class="sec-title">FIFA / EA Sports</h2>
+      <div class="sec-line"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="gpanel fa-p revL" style="border-color:rgba(0,153,255,.12);">
+          <div class="ptitle" style="color:var(--fa);">Регистрация игрока</div>
+          <form class="fgrid" id="frm-fa" onsubmit="reg(event,'fa')">
+            <div class="fg"><label class="flbl">Никнейм</label><input class="finp fa-i" name="nick" placeholder="Striker99" required/></div>
+            <div class="fg"><label class="flbl">Имя Фамилия</label><input class="finp fa-i" name="name" placeholder="Имя Фамилия" required/></div>
+            <div class="fg"><label class="flbl">PSN / EA ID</label><input class="finp fa-i" name="uid" placeholder="EA_ID"/></div>
+            <div class="fg"><label class="flbl">Рейтинг (1-99)</label><input class="finp fa-i" name="rating" type="number" min="1" max="99" placeholder="87" required/></div>
+            <div class="fg"><label class="flbl">Позиция</label><select class="fsel fa-i" name="role"><option>ST</option><option>CAM</option><option>CM</option><option>CDM</option><option>CB</option><option>GK</option></select></div>
+            <div class="fg"><label class="flbl">Нога</label><select class="fsel fa-i" name="hero"><option>Правая</option><option>Левая</option></select></div>
+            <div class="fg"><label class="flbl">АТК</label><input class="finp fa-i" name="s1" type="number" min="1" max="99" placeholder="87" required/></div>
+            <div class="fg"><label class="flbl">ДРБ</label><input class="finp fa-i" name="s2" type="number" min="1" max="99" placeholder="82"/></div>
+            <div class="fg"><label class="flbl">ТАК</label><input class="finp fa-i" name="s3" type="number" min="1" max="99" placeholder="78"/></div>
+            <div class="fg full"><label class="flbl">ЗАЩ</label><input class="finp fa-i" name="s4" type="number" min="1" max="99" placeholder="70"/></div>
+            <div class="fg full"><button class="fbtn fa-btn" type="submit">Зарегистрировать</button></div>
+          </form>
+        </div>
+        <div id="adm-fa" class="gpanel fa-p adm-panel" style="margin-top:14px;border-color:rgba(123,82,232,.12);">
+          <div class="adm-badge">Admin</div>
+          <div class="ptitle" style="color:var(--purple);">Создать турнир</div>
+          <form class="fgrid" id="frm-fa-t" onsubmit="tour(event,'fa')">
+            <div class="fg full"><label class="flbl">Название</label><input class="finp fa-i" name="tn" placeholder="АКРА FIFA Cup #1" required/></div>
+            <div class="fg"><label class="flbl">Дата</label><input class="finp fa-i" name="td" type="date" required/></div>
+            <div class="fg"><label class="flbl">Формат</label><select class="fsel fa-i" name="tf"><option>1v1</option><option>2v2</option></select></div>
+            <div class="fg"><label class="flbl">Призовой фонд</label><input class="finp fa-i" name="tp" placeholder="30 000 ₽"/></div>
+            <div class="fg full"><button class="fbtn" style="background:var(--purple);color:#fff;" type="submit">Создать турнир</button></div>
+          </form>
+        </div>
+      </div>
+      <div>
+        <div class="gpanel revR" style="border-color:rgba(0,153,255,.08);margin-bottom:16px;">
+          <div class="ptitle" style="color:var(--fa);">Активные турниры</div>
+          <div id="tours-fa" class="t-list"></div>
+        </div>
+        <div class="cards-sec revR">
+          <div class="cards-ttl">Карточки игроков — FIFA</div>
+          <div class="cards-grid" id="cards-fa"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ══════════ PUBG ══════════ -->
+<section id="pubg" class="game-section">
+  <div class="sec-bg-grad"></div>
+  <canvas class="snake-canvas" data-rgb="245,197,24"></canvas>
+  <div class="sec-inner">
+    <div class="sec-head rev">
+      <div class="sec-tag">Дисциплина 04</div>
+      <h2 class="sec-title">PUBG</h2>
+      <div class="sec-line"></div>
+    </div>
+    <div class="two-col">
+      <div>
+        <div class="gpanel pb-p revL" style="border-color:rgba(245,197,24,.12);">
+          <div class="ptitle" style="color:var(--pb);">Регистрация игрока</div>
+          <form class="fgrid" id="frm-pb" onsubmit="reg(event,'pb')">
+            <div class="fg"><label class="flbl">Никнейм</label><input class="finp pb-i" name="nick" placeholder="Chicken" required/></div>
+            <div class="fg"><label class="flbl">Имя Фамилия</label><input class="finp pb-i" name="name" placeholder="Имя Фамилия" required/></div>
+            <div class="fg"><label class="flbl">Steam ID</label><input class="finp pb-i" name="uid" placeholder="7XXXXXXXX"/></div>
+            <div class="fg"><label class="flbl">Рейтинг (RP)</label><input class="finp pb-i" name="rating" type="number" min="0" max="10000" placeholder="3000" required/></div>
+            <div class="fg"><label class="flbl">Роль</label><select class="fsel pb-i" name="role"><option>Fragger</option><option>IGL</option><option>Support</option><option>Scout</option></select></div>
+            <div class="fg"><label class="flbl">Любимая карта</label><input class="finp pb-i" name="hero" placeholder="Erangel"/></div>
+            <div class="fg"><label class="flbl">DMG</label><input class="finp pb-i" name="s1" type="number" min="1" max="99" placeholder="80" required/></div>
+            <div class="fg"><label class="flbl">AIM</label><input class="finp pb-i" name="s2" type="number" min="1" max="99" placeholder="75"/></div>
+            <div class="fg"><label class="flbl">SURV</label><input class="finp pb-i" name="s3" type="number" min="1" max="99" placeholder="82"/></div>
+            <div class="fg full"><label class="flbl">TAC</label><input class="finp pb-i" name="s4" type="number" min="1" max="99" placeholder="70"/></div>
+            <div class="fg full"><button class="fbtn pb-btn" type="submit">Зарегистрировать</button></div>
+          </form>
+        </div>
+        <div id="adm-pb" class="gpanel pb-p adm-panel" style="margin-top:14px;border-color:rgba(123,82,232,.12);">
+          <div class="adm-badge">Admin</div>
+          <div class="ptitle" style="color:var(--purple);">Создать турнир</div>
+          <form class="fgrid" id="frm-pb-t" onsubmit="tour(event,'pb')">
+            <div class="fg full"><label class="flbl">Название</label><input class="finp pb-i" name="tn" placeholder="АКРА PUBG Squads #1" required/></div>
+            <div class="fg"><label class="flbl">Дата</label><input class="finp pb-i" name="td" type="date" required/></div>
+            <div class="fg"><label class="flbl">Формат</label><select class="fsel pb-i" name="tf"><option>Squads</option><option>Duos</option><option>Solo</option></select></div>
+            <div class="fg"><label class="flbl">Призовой фонд</label><input class="finp pb-i" name="tp" placeholder="40 000 ₽"/></div>
+            <div class="fg full"><button class="fbtn" style="background:var(--purple);color:#fff;" type="submit">Создать турнир</button></div>
+          </form>
+        </div>
+      </div>
+      <div>
+        <div class="gpanel revR" style="border-color:rgba(245,197,24,.08);margin-bottom:16px;">
+          <div class="ptitle" style="color:var(--pb);">Активные турниры</div>
+          <div id="tours-pb" class="t-list"></div>
+        </div>
+        <div class="cards-sec revR">
+          <div class="cards-ttl">Карточки игроков — PUBG</div>
+          <div class="cards-grid" id="cards-pb"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ftr-logo"><img src="akra_logo_single_site.svg" alt="АКРА"/></div>
+  <div class="ftr-name">АКРА</div>
+  <div class="ftr-txt">Ассоциация Киберспорта Республики Абхазия<br/>Официальная платформа турниров</div>
+  <div class="ftr-div"></div>
+  <div class="ftr-links">
+    <a href="#cs2">Counter-Strike 2</a>
+    <a href="#dota">Dota 2</a>
+    <a href="#fifa">FIFA</a>
+    <a href="#pubg">PUBG</a>
+  </div>
+  <div class="ftr-txt" style="margin-top:14px;font-size:8px;opacity:.25;">© 2026 АКРА Esports. Все права защищены.</div>
+</footer>
+
+<div id="toast"></div>
+
+<script>
+/* ══════════════════════════════════════════
+   HELPERS
+══════════════════════════════════════════ */
+const scroll2=id=>document.getElementById(id).scrollIntoView({behavior:'smooth'});
+const ld=k=>{try{return JSON.parse(localStorage.getItem('akra_'+k)||'[]');}catch{return[];}};
+const sv=(k,v)=>localStorage.setItem('akra_'+k,JSON.stringify(v));
+function toast(msg,t='ok'){
+  const d=document.createElement('div');d.className='tmsg '+t;d.textContent=msg;
+  document.getElementById('toast').appendChild(d);
+  setTimeout(()=>{d.style.transition='.35s';d.style.opacity='0';d.style.transform='translateX(24px)';setTimeout(()=>d.remove(),360);},3000);
+}
+
+/* ══════════════════════════════════════════
+   LOADER
+══════════════════════════════════════════ */
+window.addEventListener('load',()=>setTimeout(()=>document.getElementById('loader').classList.add('hide'),2000));
+
+/* ══════════════════════════════════════════
+   ADMIN
+══════════════════════════════════════════ */
+let isAdm=false;
+function openAdm(){document.getElementById('amodal').classList.add('open');setTimeout(()=>document.getElementById('apass').focus(),80);}
+function closeAdm(){document.getElementById('amodal').classList.remove('open');}
+function checkAdm(){
+  if(document.getElementById('apass').value==='AKRA2024'){
+    isAdm=true;closeAdm();
+    document.getElementById('admBtn').classList.add('on');
+    document.getElementById('admBtn').textContent='Admin ✓';
+    document.querySelectorAll('.adm-panel').forEach(p=>p.classList.add('show'));
+    toast('Режим администратора активирован');
+  } else { toast('Неверный пароль','err');document.getElementById('apass').value=''; }
+}
+document.getElementById('apass').addEventListener('keydown',e=>{if(e.key==='Enter')checkAdm();});
+document.getElementById('amodal').addEventListener('click',e=>{if(e.target===document.getElementById('amodal'))closeAdm();});
+
+/* ══════════════════════════════════════════
+   PARTICLES
+══════════════════════════════════════════ */
+(()=>{
+  const cv=document.getElementById('pcv'),ctx=cv.getContext('2d');
+  let W,H,pts=[],mx=-999,my=-999;
+  const resize=()=>{W=cv.width=window.innerWidth;H=cv.height=window.innerHeight;};
+  window.addEventListener('resize',resize);resize();
+  window.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;});
+  const COLS=['#FF6B1A','#7B52E8','#C0392B','#0099FF','#F5C518','#ADFF2F'];
+  class P{constructor(){this.r();}r(){this.x=Math.random()*W;this.y=Math.random()*H;this.s=Math.random()*3+.8;this.vx=(Math.random()-.5)*.3;this.vy=(Math.random()-.5)*.3;this.a=Math.random()*.4+.08;this.c=COLS[Math.floor(Math.random()*COLS.length)];this.ph=Math.random()*Math.PI*2;}
+  u(){this.x+=this.vx;this.y+=this.vy;this.ph+=.016;const dx=this.x-mx,dy=this.y-my,d=Math.hypot(dx,dy);if(d<80){this.x+=dx/d*1.5;this.y+=dy/d*1.5;}if(this.x<0||this.x>W||this.y<0||this.y>H)this.r();}
+  d(){ctx.save();ctx.globalAlpha=this.a*(0.7+Math.sin(this.ph)*0.3);ctx.fillStyle=this.c;ctx.translate(this.x,this.y);ctx.rotate(Math.PI/4);ctx.fillRect(-this.s,-this.s,this.s*2,this.s*2);ctx.restore();}}
+  for(let i=0;i<90;i++)pts.push(new P());
+  function frame(){ctx.clearRect(0,0,W,H);
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const d=Math.hypot(pts[i].x-pts[j].x,pts[i].y-pts[j].y);if(d<100){ctx.globalAlpha=(1-d/100)*.1;ctx.strokeStyle='#7B52E8';ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}}
+    ctx.globalAlpha=1;pts.forEach(p=>{p.u();p.d();});requestAnimationFrame(frame);}
+  frame();
+})();
+
+/* ══════════════════════════════════════════
+   SNAKE BACKGROUND
+══════════════════════════════════════════ */
+function initSnake(canvas){
+  const sec=canvas.parentElement;
+  const rgb=canvas.dataset.rgb;
+  const ctx=canvas.getContext('2d');
+  let W,H;
+  function resize(){W=canvas.width=sec.offsetWidth;H=canvas.height=sec.offsetHeight;}
+  resize();new ResizeObserver(resize).observe(sec);
+  const CELL=26,SPEED=0.5,LEN=38;
+  function makePath(){
+    const cols=Math.ceil(W/CELL)+4,rows=Math.ceil(H/CELL)+2,pts=[];
+    for(let r=-2;r<rows;r++){const y=r;if(r%2===0){for(let x=-2;x<cols;x++)pts.push({x,y});}else{for(let x=cols;x>=-2;x--)pts.push({x,y});}}
+    return pts;
+  }
+  let path=makePath(),head=0;
+  function drawD(cx,cy,sz,a){ctx.save();ctx.globalAlpha=a;ctx.translate(cx,cy);ctx.rotate(Math.PI/4);ctx.fillRect(-sz/2,-sz/2,sz,sz);ctx.restore();}
+  function frame(){
+    ctx.clearRect(0,0,W,H);
+    if(Math.abs(Math.ceil(W/CELL)+4-path.length/Math.ceil(H/CELL))>2)path=makePath();
+    head=(head+SPEED)%path.length;
+    for(let t=0;t<LEN;t++){
+      const a=(1-t/LEN)*0.65,sz=CELL*.44*(0.55+(1-t/LEN)*.45);
+      const idx=Math.floor((head-t+path.length)%path.length);
+      const pt=path[idx];
+      ctx.fillStyle=`rgb(${rgb})`;
+      for(let w=-1;w<=1;w++){drawD(pt.x*CELL+CELL/2,(pt.y+w)*CELL+CELL/2,sz,a*(w===0?1:.55));}
+    }
+    const hp=path[Math.floor(head%path.length)];
+    ctx.save();ctx.shadowBlur=16;ctx.shadowColor=`rgba(${rgb},1)`;ctx.fillStyle=`rgba(${rgb},.9)`;
+    for(let w=-1;w<=1;w++)drawD(hp.x*CELL+CELL/2,(hp.y+w)*CELL+CELL/2,CELL*.46,.9);
+    ctx.restore();
+    requestAnimationFrame(frame);
+  }
+  frame();
+}
+document.querySelectorAll('.snake-canvas').forEach(initSnake);
+
+/* ══════════════════════════════════════════
+   REVEAL + COUNT-UP
+══════════════════════════════════════════ */
+const ro=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('vis');ro.unobserve(e.target);}});},{threshold:.08});
+document.querySelectorAll('.rev,.revL,.revR').forEach(el=>ro.observe(el));
+const co=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){const el=e.target,t=+el.dataset.c;let c=0;const s=Math.max(1,Math.floor(t/80)),iv=setInterval(()=>{c=Math.min(c+s,t);el.textContent=c.toLocaleString('ru');if(c>=t)clearInterval(iv);},18);co.unobserve(el);}});},{threshold:.3});
+document.querySelectorAll('[data-c]').forEach(el=>co.observe(el));
+
+/* ══════════════════════════════════════════
+   NAV ACTIVE
+══════════════════════════════════════════ */
+const navO=new IntersectionObserver(es=>{es.forEach(e=>{if(e.isIntersecting){document.querySelectorAll('.nav-link').forEach(l=>l.classList.remove('on'));const l=document.querySelector(`.nav-link[href="#${e.target.id}"]`);if(l)l.classList.add('on');}});},{threshold:.3});
+['cs2','dota','fifa','pubg'].forEach(id=>{const el=document.getElementById(id);if(el)navO.observe(el);});
+
+/* ══════════════════════════════════════════
+   PLAYER CARD SVG
+══════════════════════════════════════════ */
+const SCHEMES={
+  cs: {c1:'#FF8C00',c2:'#FFB84D',gr:'255,140,0', l1:'ATK', l2:'DEF', l3:'AIM', l4:'TAC'},
+  dt: {c1:'#E74C3C',c2:'#FF7070',gr:'231,76,60', l1:'DMG', l2:'SUP', l3:'FRM', l4:'FGT'},
+  fa: {c1:'#0099FF',c2:'#66C8FF',gr:'0,153,255', l1:'АТК', l2:'ДРБ', l3:'ТАК', l4:'ЗАЩ'},
+  pb: {c1:'#F5C518',c2:'#FFE066',gr:'245,197,24',l1:'DMG', l2:'AIM', l3:'SRV', l4:'TAC'},
+};
+function buildCard(p,side){
+  const S=SCHEMES[p.game]||SCHEMES.fa;
+  const id=p.id,nick=p.nick.slice(0,10).toUpperCase(),role=p.role.slice(0,6).toUpperCase();
+  const r=p.rating||75,s1=p.s1||75,s2=p.s2||70,s3=p.s3||72,s4=p.s4||68;
+  const avg=Math.round((s1+s2+s3+s4)/4);
+  const PATH=`M 84,4 C 92,4 105,6 118,10 L 148,17 C 158,20 165,27 165,38 L 165,188 C 165,201 158,212 148,218 L 96,234 C 92,237 76,237 72,234 L 20,218 C 10,212 3,201 3,188 L 3,38 C 3,27 10,20 20,17 L 50,10 C 63,6 76,4 84,4 Z`;
+  if(side==='back')return`<svg xmlns="http://www.w3.org/2000/svg" width="168" height="235" viewBox="0 0 168 235"><defs><clipPath id="bc${id}"><path d="${PATH}"/></clipPath><pattern id="bp${id}" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M6 0 L12 6 L6 12 L0 6 Z" fill="none" stroke="${S.c1}" stroke-width=".4" opacity=".35"/></pattern></defs><g clip-path="url(#bc${id})"><rect width="168" height="235" fill="#060214"/><rect width="168" height="235" fill="url(#bp${id})"/></g><path d="${PATH}" fill="none" stroke="${S.c1}" stroke-width="2.5" opacity=".85"/><text x="84" y="50" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="11" font-weight="800" letter-spacing="3" fill="white">${nick}</text><text x="84" y="66" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="8.5" font-weight="500" fill="rgba(255,255,255,.4)">${p.name}</text><text x="84" y="84" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="10" font-weight="700" fill="${S.c1}">${role}</text>${p.hero?`<text x="84" y="99" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="8" fill="rgba(255,255,255,.3)">${p.hero}</text>`:''}<text x="84" y="134" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="36" font-weight="900" fill="${S.c1}">${r}</text><text x="84" y="151" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="7.5" font-weight="700" letter-spacing="3" fill="rgba(255,255,255,.3)">РЕЙТИНГ</text><text x="84" y="228" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="7" font-weight="700" letter-spacing="4" fill="rgba(255,255,255,.15)">АКРА ESPORTS</text></svg>`;
+  return`<svg xmlns="http://www.w3.org/2000/svg" width="168" height="235" viewBox="0 0 168 235"><defs><clipPath id="fc${id}"><path d="${PATH}"/></clipPath><filter id="fg${id}" x="-25%" y="-25%" width="150%" height="150%"><feGaussianBlur in="SourceGraphic" stdDeviation="4" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter><radialGradient id="fbg${id}" cx="50%" cy="40%" r="60%"><stop offset="0%" stop-color="#2a1060"/><stop offset="60%" stop-color="#150838"/><stop offset="100%" stop-color="#070214"/></radialGradient><radialGradient id="fgl${id}" cx="15%" cy="50%" r="75%"><stop offset="0%" stop-color="rgba(${S.gr},.18)"/><stop offset="100%" stop-color="rgba(${S.gr},0)"/></radialGradient><pattern id="fp${id}" x="0" y="0" width="12" height="12" patternUnits="userSpaceOnUse"><path d="M6 0 L12 6 L6 12 L0 6 Z" fill="none" stroke="${S.c1}" stroke-width=".4" opacity=".3"/></pattern></defs><g clip-path="url(#fc${id})"><rect width="168" height="235" fill="url(#fbg${id})"/><rect width="168" height="235" fill="url(#fp${id})"/><ellipse cx="20" cy="95" rx="65" ry="100" fill="url(#fgl${id})"/><line x1="-8" y1="50" x2="176" y2="155" stroke="#9040ff" stroke-width="16" stroke-opacity=".07"/><rect x="0" y="160" width="168" height="75" fill="#040110" opacity=".92"/><rect x="0" y="159" width="168" height="2" fill="${S.c1}" opacity=".7"/><rect x="0" y="160" width="168" height="22" fill="#0d0530" opacity=".5"/><rect x="7" y="182" width="154" height="1" fill="#5030a0" opacity=".45"/></g><path filter="url(#fg${id})" d="${PATH}" fill="none" stroke="${S.c1}" stroke-width="2.5" opacity=".95"/><path clip-path="url(#fc${id})" d="M 84,8 C 91,8 103,10 115,13 L 144,20 C 153,23 160,30 160,39 L 160,187 C 160,199 153,210 144,216 L 94,231 C 90,233 78,233 74,231 L 24,216 C 15,210 8,199 8,187 L 8,39 C 8,30 15,23 24,20 L 53,13 C 65,10 77,8 84,8 Z" fill="none" stroke="${S.c2}" stroke-width="1" opacity=".5"/><g clip-path="url(#fc${id})"><text x="84" y="112" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="50" font-weight="900" fill="${S.c1}" opacity=".16">${nick.charAt(0)}</text></g><text x="22" y="57" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="26" font-weight="900" fill="${S.c1}" filter="url(#fg${id})">${r}</text><text x="150" y="50" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="9" font-weight="800" fill="white" opacity=".6">${role}</text><text x="84" y="175" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="11.5" font-weight="800" letter-spacing="2" fill="white">${nick}</text><text x="17" y="199" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" font-weight="900" fill="${S.c1}">${s1}</text><text x="17" y="209" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="6" font-weight="700" letter-spacing="1" fill="white" opacity=".4">${S.l1}</text><text x="48" y="199" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" font-weight="900" fill="${S.c1}">${s2}</text><text x="48" y="209" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="6" font-weight="700" letter-spacing="1" fill="white" opacity=".4">${S.l2}</text><text x="84" y="199" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" font-weight="900" fill="${S.c1}">${s3}</text><text x="84" y="209" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="6" font-weight="700" letter-spacing="1" fill="white" opacity=".4">${S.l3}</text><text x="120" y="199" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" font-weight="900" fill="${S.c1}">${s4}</text><text x="120" y="209" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="6" font-weight="700" letter-spacing="1" fill="white" opacity=".4">${S.l4}</text><text x="151" y="199" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="13" font-weight="900" fill="${S.c1}">${avg}</text><text x="151" y="209" text-anchor="middle" font-family="Exo 2,sans-serif" font-size="6" font-weight="700" letter-spacing="1" fill="white" opacity=".4">AVG</text></svg>`;
+}
+
+/* ══════════════════════════════════════════
+   REGISTER / TOURNAMENT
+══════════════════════════════════════════ */
+function reg(e,game){
+  e.preventDefault();const f=e.target;
+  const p={id:Date.now(),nick:f.nick.value,name:f.name.value,uid:f.uid?f.uid.value:'',
+    rating:+f.rating.value,role:f.role.value,hero:f.hero?f.hero.value:'',
+    s1:+f.s1.value,s2:f.s2?+f.s2.value:0,s3:f.s3?+f.s3.value:0,s4:f.s4?+f.s4.value:0,game};
+  const list=ld(game+'_p');list.push(p);sv(game+'_p',list);
+  renderCards(game);f.reset();toast(`Игрок ${p.nick} зарегистрирован!`);
+}
+function tour(e,game){
+  e.preventDefault();const f=e.target;
+  const t={id:Date.now(),name:f.tn.value,date:f.td.value,format:f.tf.value,prize:f.tp?f.tp.value:'',game};
+  const list=ld(game+'_t');list.push(t);sv(game+'_t',list);
+  renderTours(game);f.reset();toast(`Турнир "${t.name}" создан!`);
+}
+
+/* ══════════════════════════════════════════
+   RENDER
+══════════════════════════════════════════ */
+const BADGE={cs:'tcs',dt:'tdt',fa:'tfa',pb:'tpb'};
+function renderTours(game){
+  const list=ld(game+'_t'),el=document.getElementById('tours-'+game);
+  if(!list.length){el.innerHTML='<div class="t-empty">Нет активных турниров</div>';return;}
+  el.innerHTML=list.map(t=>`<div class="t-item"><div><div class="t-name">${t.name}</div><div class="t-meta">${t.date?new Date(t.date+'T00:00').toLocaleDateString('ru',{day:'numeric',month:'long',year:'numeric'}):''} ${t.prize?'· '+t.prize:''}</div></div><div class="t-badge ${BADGE[game]||'tcs'}">${t.format}</div></div>`).join('');
+}
+function renderCards(game){
+  const players=ld(game+'_p'),grid=document.getElementById('cards-'+game);
+  if(!players.length){grid.innerHTML='<div class="no-cards">Нет зарегистрированных игроков</div>';return;}
+  grid.innerHTML=players.map(p=>`<div class="pcard"><div class="pcard-iw"><div class="pcard-f">${buildCard(p,'front')}</div><div class="pcard-b">${buildCard(p,'back')}</div></div></div>`).join('');
+  grid.querySelectorAll('.pcard').forEach(card=>{
+    card.addEventListener('mousemove',e=>{
+      const iw=card.querySelector('.pcard-iw');
+      if(iw.style.transform.includes('180'))return;
+      const rc=card.getBoundingClientRect();
+      const x=(e.clientX-rc.left)/rc.width-.5,y=(e.clientY-rc.top)/rc.height-.5;
+      card.style.transform=`perspective(700px) rotateY(${x*22}deg) rotateX(${-y*22}deg) scale(1.06)`;
+    });
+    card.addEventListener('mouseleave',()=>card.style.transform='');
+  });
+}
+['cs','dt','fa','pb'].forEach(g=>{renderCards(g);renderTours(g);});
+</script>
+</body>
+</html>
