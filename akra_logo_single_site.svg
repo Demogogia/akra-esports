@@ -2,7 +2,7 @@
 <!-- AKRA logo — purple symbol + АКРА text + subtitle, transparent background
      Symbol color: #9165F0  |  Text color: #000000
      Usage: <img src="akra_logo.svg" alt="АКРА"> -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="1038.44 299.82 239.61 184.79" overflow="hidden" width="240" height="185">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="1145 300 135 185" overflow="hidden" width="135" height="185">
 <g transform="translate(0,0)">
 <path fill-rule="nonzero" fill="rgb(56.898499%, 39.199829%, 94.099426%)" fill-opacity="1" d="M 1183.625 336.613281 L 1170.210938 307.824219 L 1156.789062 336.613281 Z M 1183.625 336.613281 "/>
 <path fill-rule="nonzero" fill="rgb(56.898499%, 39.199829%, 94.099426%)" fill-opacity="1" d="M 1268.042969 336.613281 L 1254.628906 307.824219 L 1241.207031 336.613281 Z M 1268.042969 336.613281 "/>
