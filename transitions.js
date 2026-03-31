@@ -1,14 +1,11 @@
 /**
- * transitions.js — Page transition system
+ * transitions.js — Page & Section transition system
  *
- * Подключи в каждой странице ПЕРЕД </body>:
+ * Подключи перед </body>:
  *   <script src="transitions.js"></script>
  *
- * Для задания цвета overlay на конкретной странице
- * добавь data-атрибут на <body> или <main>:
- *   <body data-transition-color="#FF6B1A">
- *
- * Если атрибут не задан — используется #1a1a2e (тёмный нейтральный).
+ * Для page transition задай на <body>:
+ *   <body data-transition-color="#xxxxxx">
  */
 
 (function () {
@@ -16,12 +13,20 @@
 
   /* ── Настройки ──────────────────────────────── */
   const TIMING = {
-    pageOut:    400,   // ms — fade out текущей страницы
-    waveIn:     350,   // ms — волна едет снизу вверх
-    waveHold:   150,   // ms — пауза (overlay заполняет экран)
-    waveOut:    350,   // ms — волна уходит вверх
-    pageIn:     400,   // ms — fade in новой страницы
-    pageIntro:  500,   // ms — fade in при первой загрузке
+    waveIn:    320,   // ms — волна едет снизу вверх
+    waveHold:  80,    // ms — пауза под overlay
+    waveOut:   320,   // ms — волна уходит вверх
+    sectionIn: 380,   // ms — fade-in целевой секции
+    pageIntro: 500,   // ms — fade-in при первой загрузке
+  };
+
+  /* Цвет overlay для каждой секции */
+  const SECTION_COLORS = {
+    hero: '#7B52E8',
+    cs2:  '#FF6B1A',
+    dota: '#C0392B',
+    fifa: '#0099FF',
+    pubg: '#F5C518',
   };
 
   const DEFAULT_COLOR = '#1a1a2e';
@@ -37,53 +42,139 @@
     return window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   }
 
-  function getTransitionColor(targetDoc) {
-    // Ищем цвет на <body> или <main> целевой страницы
-    const sources = targetDoc
-      ? [targetDoc.body, targetDoc.querySelector('main')]
-      : [document.body, document.querySelector('main')];
-
-    for (const el of sources) {
-      if (el && el.dataset.transitionColor) {
-        return el.dataset.transitionColor;
-      }
+  /* Какая секция сейчас видна больше всего */
+  function getCurrentSection() {
+    const ids = ['hero', 'cs2', 'dota', 'fifa', 'pubg'];
+    let best = null, bestArea = 0;
+    for (const id of ids) {
+      const el = document.getElementById(id);
+      if (!el) continue;
+      const r = el.getBoundingClientRect();
+      const visible = Math.min(r.bottom, window.innerHeight) - Math.max(r.top, 0);
+      if (visible > bestArea) { bestArea = visible; best = el; }
     }
-    return DEFAULT_COLOR;
+    return best;
   }
 
-  function isInternalLink(a) {
-    // Игнорируем: внешние, якорные, target="_blank", download, javascript:
-    if (!a.href)                          return false;
-    if (a.target === '_blank')            return false;
-    if (a.hasAttribute('download'))       return false;
-    if (a.getAttribute('href').startsWith('#')) return false;
-    if (a.protocol === 'javascript:')     return false;
-
-    const isSameOrigin = a.origin === location.origin;
-    const isSameFile   = a.pathname === location.pathname;
-
-    // Внешний домен
-    if (!isSameOrigin) return false;
-
-    // Тот же файл — только якорь (уже отсеяли #anchor выше)
-    // но если href = тот же путь без хэша — тоже не анимируем, чтобы не дёргать
-    if (isSameFile && !a.hash) return false;
-    if (isSameFile && a.hash)  return false; // якорная навигация на той же странице
-
-    return true;
+  /* Сбросить overlay в исходное состояние (спрятан снизу) */
+  function resetOverlay() {
+    overlay.className = '';
+    overlay.style.clipPath = 'inset(100% 0 0 0)';
+    overlay.style.backgroundColor = '';
   }
 
-  /* ── Состояние ──────────────────────────────── */
-  let isNavigating = false;
+  /* ── Анимация секции: fade + scale ─────────── */
+  function animateSectionIn(el) {
+    el.style.transition = 'none';
+    el.style.opacity    = '0';
+    el.style.transform  = 'scale(0.98)';
 
-  /* ── Очищаем все pt-* классы на body ────────── */
-  function clearBodyClasses() {
-    document.body.classList.remove('pt-intro', 'pt-exit', 'pt-enter', 'pt-ready');
+    // Форсируем reflow перед запуском transition
+    void el.offsetHeight;
+
+    el.style.transition = `opacity ${TIMING.sectionIn}ms ease, transform ${TIMING.sectionIn}ms ease`;
+    el.style.opacity    = '1';
+    el.style.transform  = 'scale(1)';
+
+    setTimeout(() => {
+      el.style.transition = '';
+      el.style.opacity    = '';
+      el.style.transform  = '';
+    }, TIMING.sectionIn);
   }
 
-  function clearOverlayClasses() {
-    overlay.classList.remove('pt-wave-in', 'pt-wave-hold', 'pt-wave-out');
+  /* ── Переход к секции ───────────────────────── */
+  let isAnimating = false;
+
+  function navigateToSection(targetId) {
+    if (isAnimating) return;
+
+    const target = document.getElementById(targetId);
+    if (!target) return;
+
+    /* Не анимируем переход к той же секции */
+    const current = getCurrentSection();
+    if (current && current.id === targetId) return;
+
+    if (prefersReducedMotion()) {
+      target.scrollIntoView({ behavior: 'instant' });
+      return;
+    }
+
+    isAnimating = true;
+
+    const color = SECTION_COLORS[targetId] || DEFAULT_COLOR;
+    overlay.style.backgroundColor = color;
+
+    /* 1. Волна едет снизу вверх */
+    overlay.className = 'pt-wave-in';
+
+    setTimeout(() => {
+      /* 2. Overlay закрыл экран — мгновенно прыгаем к секции */
+      overlay.className = 'pt-wave-hold';
+      target.scrollIntoView({ behavior: 'instant' });
+
+      setTimeout(() => {
+        /* 3. Подготовить секцию невидимой перед началом открытия */
+        target.style.transition = 'none';
+        target.style.opacity    = '0';
+        target.style.transform  = 'scale(0.98)';
+        void target.offsetHeight;
+
+        /* 4. Волна уходит вверх */
+        overlay.className = 'pt-wave-out';
+
+        /* 5. Fade-in секции — начинаем чуть раньше окончания волны */
+        setTimeout(() => {
+          animateSectionIn(target);
+
+          setTimeout(() => {
+            resetOverlay();
+            isAnimating = false;
+          }, TIMING.waveOut - 80);
+
+        }, 60);
+
+      }, TIMING.waveHold);
+
+    }, TIMING.waveIn);
   }
+
+  /* ── Перехват кликов по якорным ссылкам ─────── */
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest('a');
+    if (!a) return;
+
+    const href = a.getAttribute('href');
+    if (!href || !href.startsWith('#')) return;
+
+    const targetId = href.slice(1);
+    if (!document.getElementById(targetId)) return;
+
+    /* Не анимируем ссылку на #hero (лого) — просто скроллим */
+    if (targetId === 'hero') {
+      e.preventDefault();
+      if (prefersReducedMotion()) {
+        document.getElementById('hero').scrollIntoView({ behavior: 'instant' });
+      } else {
+        navigateToSection('hero');
+      }
+      return;
+    }
+
+    e.preventDefault();
+    navigateToSection(targetId);
+  });
+
+  /* ── Перехват scroll2() ─────────────────────── */
+  /* scroll2 вызывается из onclick на кнопках.
+     Переопределяем после DOMContentLoaded чтобы
+     не конфликтовать с определением в <script>. */
+  window.addEventListener('DOMContentLoaded', function () {
+    window.scroll2 = function (id) {
+      navigateToSection(id);
+    };
+  });
 
   /* ── Первая загрузка страницы ───────────────── */
   function introAnimation() {
@@ -91,103 +182,63 @@
       document.body.style.opacity = '1';
       return;
     }
-
-    clearBodyClasses();
     document.body.classList.add('pt-intro');
-
     setTimeout(() => {
-      clearBodyClasses();
+      document.body.classList.remove('pt-intro');
       document.body.classList.add('pt-ready');
     }, TIMING.pageIntro);
   }
 
-  /* ── Переход: текущая страница → новая ────────
-   *
-   * Сценарий:
-   * 1. Получаем цвет overlay для целевой страницы
-   * 2. Запускаем page-out (fade + scale) параллельно с wave-in
-   * 3. Overlay держится TIMING.waveHold
-   * 4. Переходим на новую страницу (location.href)
-   *    — новая страница запустит introAnimation()
-   *    — но overlay уже нарисован? Нет: overlay — часть DOM текущей страницы
-   *    — поэтому на новой странице transition.js запустит обычный introAnimation
-   *
-   * Для SPA-подобного behaviour (без перезагрузки страницы) нужен fetch+replaceState —
-   * это сложнее. Для многостраничного сайта стандартный переход через location.href
-   * достаточен: новая страница появится с intro-анимацией.
-   * ─────────────────────────────────────────────
-   */
-  function navigateTo(url, color) {
-    if (isNavigating) return;
-    isNavigating = true;
-
-    if (prefersReducedMotion()) {
-      location.href = url;
-      return;
-    }
-
-    /* Устанавливаем цвет волны */
-    overlay.style.backgroundColor = color;
-
-    /* 1. Запускаем wave-in и page-out одновременно */
-    clearBodyClasses();
-    clearOverlayClasses();
-
-    document.body.classList.add('pt-exit');
-    overlay.classList.add('pt-wave-in');
-
-    /* 2. После wave-in — держим overlay */
-    setTimeout(() => {
-      clearOverlayClasses();
-      overlay.classList.add('pt-wave-hold');
-
-      /* 3. Переходим на новую страницу */
-      setTimeout(() => {
-        location.href = url;
-      }, TIMING.waveHold);
-
-    }, TIMING.waveIn);
-  }
-
-  /* ── Обработчик кликов (делегирование) ─────── */
-  document.addEventListener('click', function (e) {
-    // Ищем ближайший <a> от цели клика
-    const a = e.target.closest('a');
-    if (!a) return;
-    if (!isInternalLink(a)) return;
-
-    e.preventDefault();
-
-    const url   = a.href;
-    const color = a.dataset.transitionColor  // можно задать на самой ссылке
-                || getTransitionColor();       // или читаем с body/main целевой страницы
-
-    // Примечание: цвет целевой страницы мы не знаем заранее (нет fetch).
-    // Правильный workflow: задавать data-transition-color на <a> ссылках
-    // или читать с текущего body (можно закодировать маппинг URL → цвет).
-    navigateTo(url, color);
-  });
-
-  /* ── Запуск intro при загрузке ──────────────── */
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', introAnimation);
   } else {
-    // DOM уже готов (скрипт в конце body)
     introAnimation();
   }
 
-  /* ── Восстановление при popstate (кнопка "назад") ── */
+  /* ── Page transitions (для межстраничной навигации) ── */
+  document.addEventListener('click', function (e) {
+    const a = e.target.closest('a');
+    if (!a) return;
+
+    const href = a.getAttribute('href');
+    if (!href || href.startsWith('#')) return;          // якоря — уже обработали
+    if (a.target === '_blank') return;
+    if (a.hasAttribute('download')) return;
+    if (a.protocol === 'javascript:') return;
+    if (a.origin !== location.origin) return;           // внешние
+    if (a.pathname === location.pathname && !a.hash) return; // та же страница
+
+    e.preventDefault();
+
+    if (prefersReducedMotion()) {
+      location.href = a.href;
+      return;
+    }
+
+    if (isAnimating) return;
+    isAnimating = true;
+
+    const color = a.dataset.transitionColor
+      || document.body.dataset.transitionColor
+      || DEFAULT_COLOR;
+
+    overlay.style.backgroundColor = color;
+    overlay.className = 'pt-wave-in';
+
+    document.body.classList.add('pt-exit');
+
+    setTimeout(() => {
+      location.href = a.href;
+    }, TIMING.waveIn + TIMING.waveHold);
+  });
+
+  /* ── bfcache: кнопка "назад" ────────────────── */
   window.addEventListener('pageshow', function (e) {
-    // При bfcache (быстрое восстановление из кэша браузера)
-    // страница не перезагружается — нужно убрать overlay и вернуть opacity
     if (e.persisted) {
-      isNavigating = false;
-      clearBodyClasses();
-      clearOverlayClasses();
-      overlay.style.backgroundColor = '';
-      overlay.style.clipPath = 'inset(100% 0 0 0)';
-      document.body.style.opacity = '';
-      document.body.classList.add('pt-ready');
+      isAnimating = false;
+      resetOverlay();
+      document.body.classList.remove('pt-exit', 'pt-intro', 'pt-ready');
+      document.body.style.opacity = '1';
     }
   });
 

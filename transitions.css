@@ -1,95 +1,82 @@
 /* =============================================
-   transitions.css — Page transition system
+   transitions.css — Page & Section transitions
    =============================================
-   Подключи в <head> каждой страницы:
+   Подключи в <head>:
    <link rel="stylesheet" href="transitions.css">
    ============================================= */
 
-/* Body starts invisible — JS делает fade in после load */
+/* Body starts invisible — JS делает fade in */
 body {
   opacity: 0;
 }
 
-/* ── Overlay: fullscreen цветная волна ──────── */
+/* Отключаем smooth scroll — JS управляет переходами сам */
+html {
+  scroll-behavior: auto !important;
+}
+
+/* ── Overlay ─────────────────────────────────── */
 #pt-overlay {
   position: fixed;
   inset: 0;
   z-index: 999999;
   pointer-events: none;
-  /* Начинает снизу — за пределами экрана */
-  clip-path: inset(100% 0 0 0);
+  clip-path: inset(100% 0 0 0);  /* спрятан снизу */
   will-change: clip-path;
 }
 
-/* ── Анимации overlay ────────────────────────── */
+/* ── Overlay анимации ────────────────────────── */
 
-/* Волна едет снизу вверх (появление) */
+/* Волна едет снизу вверх */
 @keyframes pt-wave-in {
   from { clip-path: inset(100% 0 0 0); }
   to   { clip-path: inset(0% 0 0 0); }
 }
 
-/* Волна уходит вверх (исчезновение) */
+/* Волна уходит вверх */
 @keyframes pt-wave-out {
-  from { clip-path: inset(0% 0 100% 0); }
-  to   { clip-path: inset(0% 0 100% 0); }
-}
-
-@keyframes pt-wave-out-real {
   from { clip-path: inset(0% 0 0 0); }
   to   { clip-path: inset(0% 0 100% 0); }
 }
 
-/* ── Анимации страницы ───────────────────────── */
-
-/* Fade out текущей страницы */
-@keyframes pt-page-out {
-  from { opacity: 1; transform: scale(1); }
-  to   { opacity: 0; transform: scale(0.98); }
-}
-
-/* Fade in новой страницы */
-@keyframes pt-page-in {
-  from { opacity: 0; transform: scale(0.98); }
-  to   { opacity: 1; transform: scale(1); }
-}
-
-/* ── Классы управления ───────────────────────── */
-
-body.pt-ready {
-  opacity: 1;
-}
-
-/* Первая загрузка */
-body.pt-intro {
-  animation: pt-page-in 500ms ease forwards;
-}
-
-/* Уход со страницы */
-body.pt-exit {
-  animation: pt-page-out 400ms ease forwards;
-  pointer-events: none;
-}
-
-/* Появление при входе на новую страницу */
-body.pt-enter {
-  animation: pt-page-in 400ms ease forwards;
-}
-
-/* Overlay: волна едет снизу вверх */
 #pt-overlay.pt-wave-in {
-  animation: pt-wave-in 350ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+  animation: pt-wave-in 320ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
 }
 
-/* Overlay: заполняет весь экран (пауза) */
 #pt-overlay.pt-wave-hold {
   clip-path: inset(0% 0 0 0) !important;
   animation: none;
 }
 
-/* Overlay: волна уходит вверх */
 #pt-overlay.pt-wave-out {
-  animation: pt-wave-out-real 350ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+  animation: pt-wave-out 320ms cubic-bezier(0.76, 0, 0.24, 1) forwards;
+}
+
+/* ── Body анимации ───────────────────────────── */
+
+/* Первая загрузка */
+@keyframes pt-page-in {
+  from { opacity: 0; transform: scale(0.98); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* Уход со страницы (page transition) */
+@keyframes pt-page-out {
+  from { opacity: 1; transform: scale(1); }
+  to   { opacity: 0; transform: scale(0.98); }
+}
+
+body.pt-intro {
+  animation: pt-page-in 500ms ease forwards;
+}
+
+body.pt-ready {
+  opacity: 1;
+}
+
+body.pt-exit {
+  animation: pt-page-out 400ms ease forwards;
+  pointer-events: none;
 }
 
 /* ── Respect prefers-reduced-motion ─────────── */
@@ -97,7 +84,6 @@ body.pt-enter {
   body,
   body.pt-intro,
   body.pt-exit,
-  body.pt-enter,
   body.pt-ready {
     opacity: 1 !important;
     transform: none !important;
