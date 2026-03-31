@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>АКРА — Киберспорт Абхазии</title>
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
-<link rel="stylesheet" href="transitions.css"/>
 <style>
 /* ══════════════════════════════════════════
    DESIGN TOKENS
@@ -125,31 +124,23 @@ nav{
    SECTION TRANSITIONS (smooth diagonal wipes)
 ══════════════════════════════════════════ */
 .game-section{position:relative;min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:88px 0 60px;overflow:hidden;}
-.game-section::before{content:'';position:absolute;top:-40px;left:0;right:0;height:80px;z-index:3;pointer-events:none;}
-.game-section::after{content:'';position:absolute;bottom:-40px;left:0;right:0;height:80px;z-index:3;pointer-events:none;}
+.game-section::before{content:'';position:absolute;top:0;left:0;right:0;height:280px;z-index:3;pointer-events:none;background:linear-gradient(to bottom,#08060f 0%,transparent 100%);}
+.game-section::after{content:'';position:absolute;bottom:0;left:0;right:0;height:280px;z-index:3;pointer-events:none;background:linear-gradient(to top,#08060f 0%,transparent 100%);}
 
 /* CS2 section gradient — CS2 orange/steel */
 #cs2{background:linear-gradient(180deg,#08060f 0%,#100700 30%,#1a0a00 50%,#100700 70%,#08060f 100%);}
-#cs2::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
-#cs2::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
 #cs2 .sec-bg-grad{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 10% 50%,rgba(255,107,26,.12) 0%,transparent 50%),radial-gradient(ellipse at 90% 30%,rgba(255,140,0,.08) 0%,transparent 45%),radial-gradient(ellipse at 50% 80%,rgba(180,60,0,.06) 0%,transparent 40%);}
 
 /* DOTA 2 — blood red */
 #dota{background:linear-gradient(180deg,#08060f 0%,#120000 30%,#1a0000 50%,#120000 70%,#08060f 100%);}
-#dota::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
-#dota::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
 #dota .sec-bg-grad{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 20% 40%,rgba(192,57,43,.14) 0%,transparent 50%),radial-gradient(ellipse at 80% 60%,rgba(140,0,0,.1) 0%,transparent 45%);}
 
 /* FIFA — EA blue */
 #fifa{background:linear-gradient(180deg,#08060f 0%,#00040f 30%,#000818 50%,#00040f 70%,#08060f 100%);}
-#fifa::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
-#fifa::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
 #fifa .sec-bg-grad{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 15% 50%,rgba(0,153,255,.12) 0%,transparent 50%),radial-gradient(ellipse at 85% 40%,rgba(0,200,255,.08) 0%,transparent 45%);}
 
 /* PUBG — dirty yellow/tan + mud gradient */
 #pubg{background:linear-gradient(180deg,#08060f 0%,#150e00 25%,#1a1200 45%,#0f0a00 65%,#08060f 100%);}
-#pubg::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
-#pubg::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
 #pubg .sec-bg-grad{position:absolute;inset:0;z-index:1;
   background:
     radial-gradient(ellipse at 50% 0%,rgba(245,197,24,.15) 0%,transparent 40%),
@@ -342,7 +333,7 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 .ftr-links a:hover{color:#fff;}
 </style>
 </head>
-<body data-transition-color="#7B52E8">
+<body>
 
 <!-- LOADER -->
 <div id="loader">
@@ -642,7 +633,7 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 /* ══════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════ */
-var scroll2=id=>document.getElementById(id).scrollIntoView({behavior:'smooth'});
+const scroll2=id=>document.getElementById(id).scrollIntoView({behavior:'smooth'});
 const ld=k=>{try{return JSON.parse(localStorage.getItem('akra_'+k)||'[]');}catch{return[];}};
 const sv=(k,v)=>localStorage.setItem('akra_'+k,JSON.stringify(v));
 function toast(msg,t='ok'){
@@ -801,6 +792,5 @@ function renderCards(game){
   tick();
 })();
 </script>
-<script src="transitions.js"></script>
 </body>
 </html>
