@@ -131,25 +131,25 @@ nav{
 #cs2{background:linear-gradient(180deg,#08060f 0%,#100700 30%,#1a0a00 50%,#100700 70%,#08060f 100%);}
 #cs2::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
 #cs2::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
-#cs2 .sec-bg-grad{position:absolute;inset:0;background:radial-gradient(ellipse at 10% 50%,rgba(255,107,26,.12) 0%,transparent 50%),radial-gradient(ellipse at 90% 30%,rgba(255,140,0,.08) 0%,transparent 45%),radial-gradient(ellipse at 50% 80%,rgba(180,60,0,.06) 0%,transparent 40%);}
+#cs2 .sec-bg-grad{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 10% 50%,rgba(255,107,26,.12) 0%,transparent 50%),radial-gradient(ellipse at 90% 30%,rgba(255,140,0,.08) 0%,transparent 45%),radial-gradient(ellipse at 50% 80%,rgba(180,60,0,.06) 0%,transparent 40%);}
 
 /* DOTA 2 — blood red */
 #dota{background:linear-gradient(180deg,#08060f 0%,#120000 30%,#1a0000 50%,#120000 70%,#08060f 100%);}
 #dota::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
 #dota::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
-#dota .sec-bg-grad{position:absolute;inset:0;background:radial-gradient(ellipse at 20% 40%,rgba(192,57,43,.14) 0%,transparent 50%),radial-gradient(ellipse at 80% 60%,rgba(140,0,0,.1) 0%,transparent 45%);}
+#dota .sec-bg-grad{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 20% 40%,rgba(192,57,43,.14) 0%,transparent 50%),radial-gradient(ellipse at 80% 60%,rgba(140,0,0,.1) 0%,transparent 45%);}
 
 /* FIFA — EA blue */
 #fifa{background:linear-gradient(180deg,#08060f 0%,#00040f 30%,#000818 50%,#00040f 70%,#08060f 100%);}
 #fifa::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
 #fifa::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
-#fifa .sec-bg-grad{position:absolute;inset:0;background:radial-gradient(ellipse at 15% 50%,rgba(0,153,255,.12) 0%,transparent 50%),radial-gradient(ellipse at 85% 40%,rgba(0,200,255,.08) 0%,transparent 45%);}
+#fifa .sec-bg-grad{position:absolute;inset:0;z-index:1;background:radial-gradient(ellipse at 15% 50%,rgba(0,153,255,.12) 0%,transparent 50%),radial-gradient(ellipse at 85% 40%,rgba(0,200,255,.08) 0%,transparent 45%);}
 
 /* PUBG — dirty yellow/tan + mud gradient */
 #pubg{background:linear-gradient(180deg,#08060f 0%,#150e00 25%,#1a1200 45%,#0f0a00 65%,#08060f 100%);}
 #pubg::before{background:linear-gradient(to bottom right,#08060f 49%,transparent 51%);}
 #pubg::after{background:linear-gradient(to bottom right,transparent 49%,#08060f 51%);}
-#pubg .sec-bg-grad{position:absolute;inset:0;
+#pubg .sec-bg-grad{position:absolute;inset:0;z-index:1;
   background:
     radial-gradient(ellipse at 50% 0%,rgba(245,197,24,.15) 0%,transparent 40%),
     radial-gradient(ellipse at 20% 50%,rgba(200,134,10,.1) 0%,transparent 45%),
@@ -157,8 +157,38 @@ nav{
     linear-gradient(180deg,rgba(245,197,24,.04) 0%,rgba(80,50,0,.08) 60%,rgba(40,25,0,.1) 100%);
 }
 
-.game-bg-canvas{position:absolute;inset:0;z-index:0;pointer-events:none;width:100%;height:100%;}
+.game-bg-canvas{position:absolute;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;}
 .sec-inner{position:relative;z-index:2;max-width:1400px;margin:0 auto;padding:0 40px;}
+
+/* ══════════════════════════════════════════
+   PHOTO BACKGROUNDS + PARALLAX
+══════════════════════════════════════════ */
+.sec-photo-bg{
+  position:absolute;
+  top:-12%; left:0; right:0;
+  height:124%;          /* запас под parallax-сдвиг */
+  z-index:0;
+  background-size:cover;
+  background-position:center 40%;
+  will-change:transform;
+  pointer-events:none;
+}
+/* тёмный оверлей — вписывает фото в тёмную тему */
+.sec-photo-bg::before{
+  content:'';
+  position:absolute;inset:0;
+  background:rgba(8,6,15,.72);
+}
+/* градиент + blur снизу (~120px) */
+.sec-photo-bg::after{
+  content:'';
+  position:absolute;
+  bottom:0;left:0;right:0;
+  height:120px;
+  background:linear-gradient(to bottom, transparent 0%, rgba(8,6,15,.97) 100%);
+  backdrop-filter:blur(8px);
+  -webkit-backdrop-filter:blur(8px);
+}
 
 /* ══════════════════════════════════════════
    SECTION HEADERS
@@ -373,6 +403,7 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 
 <!-- ══════════ CS2 ══════════ -->
 <section id="cs2" class="game-section">
+  <div class="sec-photo-bg" style="background-image:url('cs2-screen.jpg')"></div>
   <div class="sec-bg-grad"></div>
   <canvas class="game-bg-canvas" id="bg-cs2"></canvas>
   <div class="sec-inner">
@@ -426,6 +457,7 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 
 <!-- ══════════ DOTA 2 ══════════ -->
 <section id="dota" class="game-section">
+  <div class="sec-photo-bg" style="background-image:url('dota-screen.jpg')"></div>
   <div class="sec-bg-grad"></div>
   <canvas class="game-bg-canvas" id="bg-dota"></canvas>
   <div class="sec-inner">
@@ -480,6 +512,7 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 
 <!-- ══════════ FIFA ══════════ -->
 <section id="fifa" class="game-section">
+  <div class="sec-photo-bg" style="background-image:url('fifa-screen.jpg')"></div>
   <div class="sec-bg-grad"></div>
   <canvas class="game-bg-canvas" id="bg-fifa"></canvas>
   <div class="sec-inner">
@@ -534,6 +567,7 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 
 <!-- ══════════ PUBG ══════════ -->
 <section id="pubg" class="game-section">
+  <div class="sec-photo-bg" style="background-image:url('pubg-screen.jpg')"></div>
   <div class="sec-bg-grad"></div>
   <canvas class="game-bg-canvas" id="bg-pubg"></canvas>
   <div class="sec-inner">
@@ -1168,6 +1202,35 @@ function renderCards(game){
   });
 }
 ['cs','dt','fa','pb'].forEach(g=>{renderCards(g);renderTours(g);});
+
+/* ══════════════════════════════════════════
+   PARALLAX SCROLL
+══════════════════════════════════════════ */
+(()=>{
+  const bgs = document.querySelectorAll('.sec-photo-bg');
+  const vh  = () => window.innerHeight;
+
+  function tick() {
+    bgs.forEach(el => {
+      const rect = el.parentElement.getBoundingClientRect();
+      // progress: 0 when section enters from bottom, 1 when it leaves at top
+      const center = rect.top + rect.height / 2;
+      const progress = (vh() / 2 - center) / vh(); // −0.5 … +0.5
+      // max ±55px — тихий, атмосферный эффект
+      const offset = progress * 55;
+      el.style.transform = `translateY(${offset.toFixed(2)}px)`;
+    });
+    rafId = null;
+  }
+
+  let rafId = null;
+  window.addEventListener('scroll', () => {
+    if (!rafId) rafId = requestAnimationFrame(tick);
+  }, { passive: true });
+
+  window.addEventListener('resize', tick, { passive: true });
+  tick();
+})();
 </script>
 </body>
 </html>
