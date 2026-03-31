@@ -157,21 +157,25 @@ nav{
     linear-gradient(180deg,rgba(245,197,24,.04) 0%,rgba(80,50,0,.08) 60%,rgba(40,25,0,.1) 100%);
 }
 
-.game-bg-canvas{position:absolute;inset:0;z-index:1;pointer-events:none;width:100%;height:100%;mix-blend-mode:screen;}
 .sec-inner{position:relative;z-index:2;max-width:1400px;margin:0 auto;padding:0 40px;}
 
 /* ══════════════════════════════════════════
-   PHOTO BACKGROUNDS + PARALLAX
+   VIDEO BACKGROUNDS + PARALLAX
 ══════════════════════════════════════════ */
 .sec-photo-bg{
   position:absolute;
   top:-12%; left:0; right:0;
-  height:124%;          /* запас под parallax-сдвиг */
+  height:124%;
   z-index:0;
-  background-size:cover;
-  background-position:center 40%;
   will-change:transform;
   pointer-events:none;
+  overflow:hidden;
+}
+.sec-photo-bg video{
+  position:absolute;
+  inset:0; width:100%; height:100%;
+  object-fit:cover;
+  object-position:center;
 }
 /* тёмный оверлей — вписывает фото в тёмную тему */
 .sec-photo-bg::before{
@@ -403,9 +407,8 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 
 <!-- ══════════ CS2 ══════════ -->
 <section id="cs2" class="game-section">
-  <div class="sec-photo-bg" style="background-image:url('cs2-screen.jpg')"></div>
+  <div class="sec-photo-bg"><video autoplay loop muted playsinline><source src="cs2.mp4" type="video/mp4"></video></div>
   <div class="sec-bg-grad"></div>
-  <canvas class="game-bg-canvas" id="bg-cs2"></canvas>
   <div class="sec-inner">
     <div class="sec-head rev">
       <div class="sec-tag">Дисциплина 01</div>
@@ -457,9 +460,8 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 
 <!-- ══════════ DOTA 2 ══════════ -->
 <section id="dota" class="game-section">
-  <div class="sec-photo-bg" style="background-image:url('dota-screen.jpg')"></div>
+  <div class="sec-photo-bg"><video autoplay loop muted playsinline><source src="dota2.mp4" type="video/mp4"></video></div>
   <div class="sec-bg-grad"></div>
-  <canvas class="game-bg-canvas" id="bg-dota"></canvas>
   <div class="sec-inner">
     <div class="sec-head rev">
       <div class="sec-tag">Дисциплина 02</div>
@@ -512,9 +514,8 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 
 <!-- ══════════ FIFA ══════════ -->
 <section id="fifa" class="game-section">
-  <div class="sec-photo-bg" style="background-image:url('fifa-screen.jpg')"></div>
+  <div class="sec-photo-bg"><video autoplay loop muted playsinline><source src="fifa.mp4" type="video/mp4"></video></div>
   <div class="sec-bg-grad"></div>
-  <canvas class="game-bg-canvas" id="bg-fifa"></canvas>
   <div class="sec-inner">
     <div class="sec-head rev">
       <div class="sec-tag">Дисциплина 03</div>
@@ -567,9 +568,8 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 
 <!-- ══════════ PUBG ══════════ -->
 <section id="pubg" class="game-section">
-  <div class="sec-photo-bg" style="background-image:url('pubg-screen.jpg')"></div>
+  <div class="sec-photo-bg"><video autoplay loop muted playsinline><source src="pubg.mp4" type="video/mp4"></video></div>
   <div class="sec-bg-grad"></div>
-  <canvas class="game-bg-canvas" id="bg-pubg"></canvas>
   <div class="sec-inner">
     <div class="sec-head rev">
       <div class="sec-tag">Дисциплина 04</div>
@@ -690,122 +690,6 @@ document.getElementById('amodal').addEventListener('click',e=>{if(e.target===doc
   function frame(){ctx.clearRect(0,0,W,H);
     for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){const d=Math.hypot(pts[i].x-pts[j].x,pts[i].y-pts[j].y);if(d<100){ctx.globalAlpha=(1-d/100)*.1;ctx.strokeStyle='#7B52E8';ctx.lineWidth=.4;ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);ctx.stroke();}}
     ctx.globalAlpha=1;pts.forEach(p=>{p.u();p.d();});requestAnimationFrame(frame);}
-  frame();
-})();
-
-/* ══════════════════════════════════════════
-   GAME BACKGROUNDS — atmospheric overlays
-══════════════════════════════════════════ */
-function mkBg(id){
-  const cv=document.getElementById(id);if(!cv)return null;
-  const ctx=cv.getContext('2d');let W,H;
-  const sec=cv.parentElement;
-  const rz=()=>{W=cv.width=sec.offsetWidth;H=cv.height=sec.offsetHeight;};
-  rz();new ResizeObserver(rz).observe(sec);
-  return{cv,ctx,gW:()=>W,gH:()=>H};
-}
-
-/* ── CS2: smoke + muzzle glow ── */
-(()=>{
-  const bg=mkBg('bg-cs2');if(!bg)return;
-  const{ctx}=bg;
-  let t=0,flashA=0,nextFlash=300;
-  function mkSmoke(W,H){return{x:W*.1+Math.random()*W*.8,y:H+20,vy:-(0.15+Math.random()*.28),vx:(Math.random()-.5)*.18,r:6+Math.random()*18,maxA:0.05+Math.random()*.06,life:0,maxLife:280+Math.random()*220};}
-  const smokes=Array.from({length:20},()=>{const s=mkSmoke(1,1);s.y=Math.random()*600;s.life=Math.random()*s.maxLife;return s;});
-  function frame(){
-    const W=bg.gW(),H=bg.gH();ctx.clearRect(0,0,W,H);t++;
-    smokes.forEach((s,i)=>{
-      s.x+=s.vx;s.y+=s.vy;s.r+=.05;s.life++;
-      const lp=s.life/s.maxLife,a=s.maxA*Math.sin(lp*Math.PI);
-      if(a>.004){const g=ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r);g.addColorStop(0,`rgba(205,195,185,${a})`);g.addColorStop(1,'rgba(205,195,185,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(s.x,s.y,s.r,0,Math.PI*2);ctx.fill();}
-      if(s.life>=s.maxLife){smokes[i]=mkSmoke(W,H);}
-    });
-    if(flashA>0){
-      const g=ctx.createRadialGradient(W*.68,H*.43,0,W*.68,H*.43,W*.38*flashA);
-      g.addColorStop(0,`rgba(255,140,30,${flashA*.07})`);g.addColorStop(1,'rgba(255,90,0,0)');
-      ctx.fillStyle=g;ctx.fillRect(0,0,W,H);flashA=Math.max(0,flashA-.03);
-    }
-    if(t>=nextFlash){flashA=1;nextFlash=t+380+Math.floor(Math.random()*280);}
-    requestAnimationFrame(frame);
-  }
-  frame();
-})();
-
-/* ── Dota 2: crimson embers + rune pulse ── */
-(()=>{
-  const bg=mkBg('bg-dota');if(!bg)return;
-  const{ctx}=bg;
-  let t=0,runeA=0,runeDir=1;
-  function mkEmber(W,H){return{x:Math.random()*W,y:H*.45+Math.random()*H*.55,vx:(Math.random()-.5)*.22,vy:-(0.2+Math.random()*.45),r:.8+Math.random()*2,phase:Math.random()*Math.PI*2,life:0,maxLife:160+Math.random()*200};}
-  const embers=Array.from({length:24},()=>{const e=mkEmber(1,1);e.y=Math.random()*600;e.life=Math.random()*e.maxLife;return e;});
-  function frame(){
-    const W=bg.gW(),H=bg.gH();ctx.clearRect(0,0,W,H);t++;
-    embers.forEach((e,i)=>{
-      e.x+=e.vx+Math.sin(e.phase+=.02)*.1;e.y+=e.vy;e.life++;
-      const lp=e.life/e.maxLife,a=.65*Math.sin(lp*Math.PI);
-      if(a>.01){ctx.save();ctx.globalAlpha=a;ctx.fillStyle=`hsl(${4+Math.random()*14},88%,54%)`;ctx.beginPath();ctx.arc(e.x,e.y,e.r,0,Math.PI*2);ctx.fill();ctx.restore();}
-      if(e.life>=e.maxLife||e.y<0){embers[i]=mkEmber(W,H);}
-    });
-    runeA+=runeDir*.003;if(runeA>.10||runeA<0)runeDir*=-1;
-    const g=ctx.createRadialGradient(W*.5,H*.54,0,W*.5,H*.54,W*.2);
-    g.addColorStop(0,`rgba(35,190,35,${runeA})`);g.addColorStop(1,'rgba(15,130,15,0)');
-    ctx.fillStyle=g;ctx.fillRect(0,0,W,H);
-    requestAnimationFrame(frame);
-  }
-  frame();
-})();
-
-/* ── FIFA: crowd camera flashes ── */
-(()=>{
-  const bg=mkBg('bg-fifa');if(!bg)return;
-  const{ctx}=bg;
-  const active=[];
-  function spawnFlash(W,H){
-    const r=Math.random();let x,y;
-    if(r<.52){x=Math.random()*W;y=H*.55+Math.random()*H*.44;}
-    else if(r<.67){x=Math.random()*W*.17;y=H*.1+Math.random()*H*.36;}
-    else if(r<.82){x=W*.83+Math.random()*W*.17;y=H*.1+Math.random()*H*.36;}
-    else if(Math.random()<.5){x=W*.17+Math.random()*W*.22;y=H*.06+Math.random()*H*.13;}
-    else{x=W*.61+Math.random()*W*.22;y=H*.06+Math.random()*H*.13;}
-    active.push({x,y,life:0,maxLife:4+Math.floor(Math.random()*5),size:1.5+Math.random()*2.5,intensity:.55+Math.random()*.45});
-  }
-  function frame(){
-    const W=bg.gW(),H=bg.gH();ctx.clearRect(0,0,W,H);
-    const n=2+Math.floor(Math.random()*3);
-    for(let i=0;i<n;i++)if(Math.random()<.45)spawnFlash(W,H);
-    for(let i=active.length-1;i>=0;i--){
-      const f=active[i];
-      const a=f.intensity*Math.pow(1-f.life/f.maxLife,1.8);
-      if(a>.015){
-        const g=ctx.createRadialGradient(f.x,f.y,0,f.x,f.y,f.size*5.5);
-        g.addColorStop(0,`rgba(215,228,255,${a*.85})`);g.addColorStop(.35,`rgba(205,218,255,${a*.38})`);g.addColorStop(1,'rgba(195,212,255,0)');
-        ctx.fillStyle=g;ctx.beginPath();ctx.arc(f.x,f.y,f.size*5.5,0,Math.PI*2);ctx.fill();
-        ctx.fillStyle=`rgba(242,246,255,${Math.min(1,a*1.6)})`;ctx.beginPath();ctx.arc(f.x,f.y,f.size*.75,0,Math.PI*2);ctx.fill();
-      }
-      f.life++;if(f.life>=f.maxLife)active.splice(i,1);
-    }
-    requestAnimationFrame(frame);
-  }
-  frame();
-})();
-
-/* ── PUBG: dust wind ── */
-(()=>{
-  const bg=mkBg('bg-pubg');if(!bg)return;
-  const{ctx}=bg;
-  function mkDust(W,H){return{x:-40,y:H*.28+Math.random()*H*.68,vx:.7+Math.random()*1.5,vy:(Math.random()-.5)*.1,r:1+Math.random()*4,a:.04+Math.random()*.11,phase:Math.random()*Math.PI*2};}
-  const dust=Array.from({length:38},()=>{const d=mkDust(1,1);d.x=Math.random()*1600;return d;});
-  function frame(){
-    const W=bg.gW(),H=bg.gH();ctx.clearRect(0,0,W,H);
-    dust.forEach((d,i)=>{
-      d.x+=d.vx;d.y+=d.vy+Math.sin(d.phase+=.016)*.09;
-      if(d.x>W+50){const nd=mkDust(W,H);dust[i]=nd;}
-      const g=ctx.createRadialGradient(d.x,d.y,0,d.x,d.y,d.r*3.5);
-      g.addColorStop(0,`rgba(215,178,88,${d.a})`);g.addColorStop(1,'rgba(215,178,88,0)');
-      ctx.fillStyle=g;ctx.beginPath();ctx.arc(d.x,d.y,d.r*3.5,0,Math.PI*2);ctx.fill();
-    });
-    requestAnimationFrame(frame);
-  }
   frame();
 })();
 
