@@ -642,7 +642,7 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 /* ══════════════════════════════════════════
    HELPERS
 ══════════════════════════════════════════ */
-const scroll2=id=>document.getElementById(id).scrollIntoView({behavior:'smooth'});
+var scroll2=id=>document.getElementById(id).scrollIntoView({behavior:'smooth'});
 const ld=k=>{try{return JSON.parse(localStorage.getItem('akra_'+k)||'[]');}catch{return[];}};
 const sv=(k,v)=>localStorage.setItem('akra_'+k,JSON.stringify(v));
 function toast(msg,t='ok'){
