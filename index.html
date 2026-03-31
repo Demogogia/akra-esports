@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 <title>АКРА — Киберспорт Абхазии</title>
 <link href="https://fonts.googleapis.com/css2?family=Exo+2:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="transitions.css"/>
 <style>
 /* ══════════════════════════════════════════
    DESIGN TOKENS
@@ -341,7 +342,7 @@ footer{background:#000;border-top:1px solid rgba(255,255,255,.05);padding:50px 4
 .ftr-links a:hover{color:#fff;}
 </style>
 </head>
-<body>
+<body data-transition-color="#7B52E8">
 
 <!-- LOADER -->
 <div id="loader">
@@ -800,5 +801,6 @@ function renderCards(game){
   tick();
 })();
 </script>
+<script src="transitions.js"></script>
 </body>
 </html>
